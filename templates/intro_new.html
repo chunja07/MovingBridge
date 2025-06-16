@@ -3,63 +3,71 @@
 {% block title %}자기소개 등록 - 이사업체 구인 커뮤니티{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header">
-                <h2 class="card-title mb-0">
-                    <i class="fas fa-user me-2"></i>자기소개 등록
-                </h2>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="text-center mb-5">
+                <div class="icon-large">👤</div>
+                <h1 class="section-title">자기소개 등록</h1>
+                <p class="lead text-muted">나를 소개하고 좋은 일자리를 찾아보세요</p>
             </div>
+            
+            <div class="card">
+                <div class="card-header text-center">
+                    <h3 class="mb-0 fw-bold">새로운 자기소개</h3>
+                </div>
             <div class="card-body">
                 <form method="POST">
-                    <div class="mb-3">
-                        <label for="name" class="form-label">
-                            <i class="fas fa-id-card me-1"></i>이름 <span class="text-danger">*</span>
-                        </label>
-                        <input type="text" class="form-control" id="name" name="name" 
-                               placeholder="예: 홍길동" required>
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <label for="name" class="form-label fw-semibold">
+                                👤 이름 <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control form-control-lg" id="name" name="name" 
+                                   placeholder="예: 홍길동" required>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <label for="nationality" class="form-label fw-semibold">
+                                🌍 국적 <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control form-control-lg" id="nationality" name="nationality" 
+                                   placeholder="예: 베트남, 필리핀, 태국 등" required>
+                        </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="nationality" class="form-label">
-                            <i class="fas fa-flag me-1"></i>국적 <span class="text-danger">*</span>
+                    <div class="mb-4">
+                        <label for="languages" class="form-label fw-semibold">
+                            💬 구사 가능한 언어 <span class="text-danger">*</span>
                         </label>
-                        <input type="text" class="form-control" id="nationality" name="nationality" 
-                               placeholder="예: 베트남, 필리핀, 태국 등" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="languages" class="form-label">
-                            <i class="fas fa-language me-1"></i>구사 가능한 언어 <span class="text-danger">*</span>
-                        </label>
-                        <input type="text" class="form-control" id="languages" name="languages" 
+                        <input type="text" class="form-control form-control-lg" id="languages" name="languages" 
                                placeholder="예: 한국어(중급), 영어(상급), 베트남어(모국어)" required>
+                        <div class="form-text">언어 실력을 구체적으로 적어주시면 더 좋습니다.</div>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="youtube_link" class="form-label">
-                            <i class="fab fa-youtube me-1"></i>유튜브 영상 링크 (선택사항)
+                    <div class="mb-4">
+                        <label for="youtube_link" class="form-label fw-semibold">
+                            🎥 유튜브 영상 링크 (선택사항)
                         </label>
-                        <input type="url" class="form-control" id="youtube_link" name="youtube_link" 
+                        <input type="url" class="form-control form-control-lg" id="youtube_link" name="youtube_link" 
                                placeholder="https://www.youtube.com/watch?v=...">
-                        <div class="form-text">자기소개 영상이 있다면 유튜브 링크를 입력해주세요.</div>
+                        <div class="form-text">자기소개 영상이 있다면 유튜브 링크를 입력해주세요. 더 좋은 인상을 줄 수 있습니다!</div>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="introduction" class="form-label">
-                            <i class="fas fa-file-text me-1"></i>자기소개 <span class="text-danger">*</span>
+                    <div class="mb-4">
+                        <label for="introduction" class="form-label fw-semibold">
+                            📝 자기소개 <span class="text-danger">*</span>
                         </label>
-                        <textarea class="form-control" id="introduction" name="introduction" rows="6" 
+                        <textarea class="form-control" id="introduction" name="introduction" rows="8" 
                                   placeholder="자신의 경험, 기술, 성격, 희망하는 근무 조건 등을 자유롭게 작성해주세요." required></textarea>
+                        <div class="form-text">솔직하고 진심이 담긴 자기소개가 더 좋은 기회로 이어집니다.</div>
                     </div>
 
-                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                        <a href="{{ url_for('index') }}" class="btn btn-secondary me-md-2">
-                            <i class="fas fa-arrow-left me-1"></i>취소
+                    <div class="d-grid gap-3 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-lg">
+                            ← 취소
                         </a>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-check me-1"></i>자기소개 등록
+                        <button type="submit" class="btn btn-secondary btn-lg">
+                            ✓ 자기소개 등록하기
                         </button>
                     </div>
                 </form>
