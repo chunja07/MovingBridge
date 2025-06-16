@@ -3,42 +3,72 @@
 {% block title %}{{ intro.name }}님의 자기소개{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <h2 class="card-title mb-1">{{ intro.name }}님의 자기소개</h2>
-                        <h5 class="text-muted mb-0">
-                            <i class="fas fa-flag me-1"></i>{{ intro.nationality }}
-                        </h5>
-                    </div>
-                    <span class="badge bg-secondary">자기소개</span>
-                </div>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="text-center mb-4">
+                <a href="{{ url_for('index') }}" class="btn btn-outline-secondary mb-3">
+                    ← 목록으로 돌아가기
+                </a>
             </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="d-flex align-items-center mb-3">
+                                <span class="icon-large me-3">👤</span>
+                                <div>
+                                    <h1 class="fw-bold mb-1">{{ intro.name }}님</h1>
+                                    <h4 class="text-muted mb-0">🌍 {{ intro.nationality }}</h4>
+                                </div>
+                            </div>
+                        </div>
+                        <span class="badge bg-secondary fs-6">자기소개</span>
+                    </div>
+                </div>
             <div class="card-body">
-                <div class="mb-4">
-                    <h5><i class="fas fa-language me-2"></i>구사 가능한 언어</h5>
-                    <p class="ms-4">{{ intro.languages }}</p>
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center mb-3">
+                            <span class="fs-4 me-3">💬</span>
+                            <div>
+                                <h5 class="mb-1 fw-semibold">구사 가능한 언어</h5>
+                                <p class="mb-0 fs-5">{{ intro.languages }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center mb-3">
+                            <span class="fs-4 me-3">🕒</span>
+                            <div>
+                                <h5 class="mb-1 fw-semibold">등록일</h5>
+                                <p class="mb-0 text-muted">{{ intro.timestamp|datetime }}</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 {% if intro.youtube_link %}
                 <div class="mb-4">
-                    <h5><i class="fab fa-youtube me-2"></i>소개 영상</h5>
-                    <div class="ms-4">
-                        <div class="ratio ratio-16x9">
+                    <div class="d-flex align-items-start mb-3">
+                        <span class="fs-4 me-3">🎥</span>
+                        <h5 class="fw-semibold">소개 영상</h5>
+                    </div>
+                    <div class="bg-light p-4 rounded-3">
+                        <div class="ratio ratio-16x9 mb-3">
                             {% set video_id = intro.youtube_link.split('v=')[1].split('&')[0] if 'v=' in intro.youtube_link else intro.youtube_link.split('/')[-1] %}
                             <iframe src="https://www.youtube.com/embed/{{ video_id }}" 
                                     title="YouTube video player" 
                                     frameborder="0" 
                                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                                    allowfullscreen>
+                                    allowfullscreen
+                                    class="rounded-3">
                             </iframe>
                         </div>
-                        <div class="mt-2">
-                            <a href="{{ intro.youtube_link }}" target="_blank" class="btn btn-sm btn-outline-danger">
-                                <i class="fab fa-youtube me-1"></i>유튜브에서 보기
+                        <div class="text-center">
+                            <a href="{{ intro.youtube_link }}" target="_blank" class="btn btn-outline-danger">
+                                🎥 유튜브에서 보기
                             </a>
                         </div>
                     </div>
@@ -46,54 +76,37 @@
                 {% endif %}
 
                 <div class="mb-4">
-                    <h5><i class="fas fa-file-text me-2"></i>자기소개</h5>
-                    <div class="ms-4">
-                        <p style="white-space: pre-line;">{{ intro.introduction }}</p>
+                    <div class="d-flex align-items-start mb-3">
+                        <span class="fs-4 me-3">📝</span>
+                        <h5 class="fw-semibold">자기소개</h5>
                     </div>
-                </div>
-
-                <div class="mb-3">
-                    <small class="text-muted">
-                        <i class="fas fa-clock me-1"></i>등록일: {{ intro.timestamp|datetime }}
-                    </small>
+                    <div class="bg-light p-4 rounded-3">
+                        <p class="mb-0 lh-lg" style="white-space: pre-line;">{{ intro.introduction }}</p>
+                    </div>
                 </div>
             </div>
             <div class="card-footer">
-                <div class="d-flex justify-content-between align-items-center">
-                    <a href="{{ url_for('index') }}" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left me-1"></i>목록으로 돌아가기
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="{{ url_for('intro_new') }}" class="btn btn-outline-secondary btn-lg">
+                        👤 새 자기소개 등록
                     </a>
-                    <div>
-                        <a href="{{ url_for('intro_new') }}" class="btn btn-outline-secondary">
-                            <i class="fas fa-plus me-1"></i>새 자기소개 등록
-                        </a>
-                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Contact Information Card -->
         <div class="card mt-4">
-            <div class="card-header">
-                <h5 class="card-title mb-0">
-                    <i class="fas fa-briefcase me-2"></i>채용 담당자께
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="alert alert-success">
-                    <h6 class="alert-heading">
-                        <i class="fas fa-info-circle me-1"></i>채용 안내
-                    </h6>
-                    <p class="mb-0">
-                        {{ intro.name }}님에게 관심이 있으시다면, 구인공고를 등록하여 
-                        더 많은 구직자들에게 기회를 제공해보세요.
-                    </p>
+            <div class="card-body text-center py-5">
+                <div class="icon-large mb-3">💼</div>
+                <h4 class="fw-bold mb-4">채용 담당자께</h4>
+                <div class="alert alert-success text-start mb-4">
+                    <h6 class="alert-heading fw-semibold">💡 채용 안내</h6>
+                    <p class="mb-2">{{ intro.name }}님에게 관심이 있으시다면, 구인공고를 등록하여</p>
+                    <p class="mb-0">더 많은 구직자들에게 기회를 제공해보세요.</p>
                 </div>
-                <div class="text-center">
-                    <a href="{{ url_for('job_new') }}" class="btn btn-primary">
-                        <i class="fas fa-plus me-1"></i>구인공고 등록하기
-                    </a>
-                </div>
+                <a href="{{ url_for('job_new') }}" class="btn btn-primary btn-lg">
+                    📢 구인공고 등록하기
+                </a>
             </div>
         </div>
     </div>
