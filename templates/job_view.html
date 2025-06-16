@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}{{ job.title }} - 구인공고{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h2 class="card-title mb-1">{{ job.title }}</h2>
+                        <h4 class="text-muted mb-0">
+                            <i class="fas fa-building me-1"></i>{{ job.company }}
+                        </h4>
+                    </div>
+                    <span class="badge bg-primary">구인공고</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <h5><i class="fas fa-phone me-2"></i>연락처</h5>
+                    <p class="ms-4">{{ job.contact }}</p>
+                </div>
+
+                <div class="mb-4">
+                    <h5><i class="fas fa-file-text me-2"></i>구인 내용</h5>
+                    <div class="ms-4">
+                        <p style="white-space: pre-line;">{{ job.description }}</p>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <small class="text-muted">
+                        <i class="fas fa-clock me-1"></i>등록일: {{ job.timestamp|datetime }}
+                    </small>
+                </div>
+            </div>
+            <div class="card-footer">
+                <div class="d-flex justify-content-between align-items-center">
+                    <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>목록으로 돌아가기
+                    </a>
+                    <div>
+                        <a href="{{ url_for('job_new') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-plus me-1"></i>새 구인공고 등록
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Information Card -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-handshake me-2"></i>지원 안내
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h6 class="alert-heading">
+                        <i class="fas fa-info-circle me-1"></i>지원 방법
+                    </h6>
+                    <p class="mb-0">
+                        위에 표시된 연락처로 직접 연락하여 지원하시기 바랍니다. 
+                        자기소개를 미리 작성해두시면 더욱 유리할 수 있습니다.
+                    </p>
+                </div>
+                <div class="text-center">
+                    <a href="{{ url_for('intro_new') }}" class="btn btn-success">
+                        <i class="fas fa-user-plus me-1"></i>자기소개 작성하기
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

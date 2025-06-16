@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}구인공고 등록 - 이사업체 구인 커뮤니티{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title mb-0">
+                    <i class="fas fa-briefcase me-2"></i>구인공고 등록
+                </h2>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">
+                            <i class="fas fa-heading me-1"></i>구인 제목 <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" class="form-control" id="title" name="title" 
+                               placeholder="예: 이사 도우미 구함" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="company" class="form-label">
+                            <i class="fas fa-building me-1"></i>회사명 <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" class="form-control" id="company" name="company" 
+                               placeholder="예: ABC 이사서비스" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="contact" class="form-label">
+                            <i class="fas fa-phone me-1"></i>연락처 <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" class="form-control" id="contact" name="contact" 
+                               placeholder="예: 010-1234-5678 또는 abc@email.com" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">
+                            <i class="fas fa-file-text me-1"></i>구인 내용 <span class="text-danger">*</span>
+                        </label>
+                        <textarea class="form-control" id="description" name="description" rows="6" 
+                                  placeholder="근무 조건, 급여, 근무 시간, 요구 사항 등을 자세히 작성해주세요." required></textarea>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('index') }}" class="btn btn-secondary me-md-2">
+                            <i class="fas fa-arrow-left me-1"></i>취소
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-check me-1"></i>구인공고 등록
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-info-circle me-2"></i>작성 가이드
+                </h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        <strong>구인 제목:</strong> 간단명료하게 어떤 일인지 표현해주세요.
+                    </li>
+                    <li class="list-group-item">
+                        <strong>회사명:</strong> 정확한 회사명을 입력해주세요.
+                    </li>
+                    <li class="list-group-item">
+                        <strong>연락처:</strong> 전화번호나 이메일 등 연락 가능한 정보를 입력해주세요.
+                    </li>
+                    <li class="list-group-item">
+                        <strong>구인 내용:</strong> 근무 조건, 급여, 근무 시간, 필요한 기술이나 경험 등을 자세히 작성해주세요.
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

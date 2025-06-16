@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}자기소개 등록 - 이사업체 구인 커뮤니티{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title mb-0">
+                    <i class="fas fa-user me-2"></i>자기소개 등록
+                </h2>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">
+                            <i class="fas fa-id-card me-1"></i>이름 <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" class="form-control" id="name" name="name" 
+                               placeholder="예: 홍길동" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="nationality" class="form-label">
+                            <i class="fas fa-flag me-1"></i>국적 <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" class="form-control" id="nationality" name="nationality" 
+                               placeholder="예: 베트남, 필리핀, 태국 등" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="languages" class="form-label">
+                            <i class="fas fa-language me-1"></i>구사 가능한 언어 <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" class="form-control" id="languages" name="languages" 
+                               placeholder="예: 한국어(중급), 영어(상급), 베트남어(모국어)" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="youtube_link" class="form-label">
+                            <i class="fab fa-youtube me-1"></i>유튜브 영상 링크 (선택사항)
+                        </label>
+                        <input type="url" class="form-control" id="youtube_link" name="youtube_link" 
+                               placeholder="https://www.youtube.com/watch?v=...">
+                        <div class="form-text">자기소개 영상이 있다면 유튜브 링크를 입력해주세요.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="introduction" class="form-label">
+                            <i class="fas fa-file-text me-1"></i>자기소개 <span class="text-danger">*</span>
+                        </label>
+                        <textarea class="form-control" id="introduction" name="introduction" rows="6" 
+                                  placeholder="자신의 경험, 기술, 성격, 희망하는 근무 조건 등을 자유롭게 작성해주세요." required></textarea>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('index') }}" class="btn btn-secondary me-md-2">
+                            <i class="fas fa-arrow-left me-1"></i>취소
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-check me-1"></i>자기소개 등록
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-lightbulb me-2"></i>작성 팁
+                </h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        <strong>이름:</strong> 실명 또는 활동명을 입력해주세요.
+                    </li>
+                    <li class="list-group-item">
+                        <strong>국적:</strong> 출신 국가를 명확히 표기해주세요.
+                    </li>
+                    <li class="list-group-item">
+                        <strong>언어 능력:</strong> 각 언어별 수준을 구체적으로 표현해주세요.
+                    </li>
+                    <li class="list-group-item">
+                        <strong>유튜브 영상:</strong> 본인을 소개하는 짧은 영상이 있다면 더욱 좋습니다.
+                    </li>
+                    <li class="list-group-item">
+                        <strong>자기소개:</strong> 이사 관련 경험, 체력, 성실성, 희망 급여 등을 구체적으로 작성해주세요.
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
