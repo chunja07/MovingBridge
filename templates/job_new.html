@@ -1,64 +1,66 @@
 {% extends "base.html" %}
 
-{% block title %}구인공고 등록 - 이사업체 구인 커뮤니티{% endblock %}
+{% block title %}채용공고 등록 - 무빙브릿지{% endblock %}
 
 {% block content %}
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-lg-8">
-            <div class="text-center mb-5">
-                <div class="icon-large">📢</div>
-                <h1 class="section-title">구인공고 등록</h1>
+            <div class="text-center mb-4">
+                <div class="post-card-icon text-primary mb-3">📢</div>
+                <h1 class="section-title">채용공고 등록</h1>
                 <p class="lead text-muted">우수한 외국인 근로자를 찾아보세요</p>
             </div>
             
             <div class="card">
-                <div class="card-header text-center">
-                    <h3 class="mb-0 fw-bold">새로운 구인공고</h3>
+                <div class="card-header">
+                    <h4 class="mb-0 fw-bold text-center">새로운 채용공고</h4>
                 </div>
-            <div class="card-body">
                 <form method="POST">
-                    <div class="row">
-                        <div class="col-md-6 mb-4">
-                            <label for="title" class="form-label fw-semibold">
-                                📝 구인 제목 <span class="text-danger">*</span>
-                            </label>
-                            <input type="text" class="form-control form-control-lg" id="title" name="title" 
-                                   placeholder="예: 이사 도우미 구함" required>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="title" class="form-label fw-semibold">
+                                    채용 제목 <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" class="form-control" id="title" name="title" 
+                                       placeholder="예: 이사 도우미 구함" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="company" class="form-label fw-semibold">
+                                    회사명 <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" class="form-control" id="company" name="company" 
+                                       placeholder="예: ABC 이사서비스" required>
+                            </div>
                         </div>
-                        <div class="col-md-6 mb-4">
-                            <label for="company" class="form-label fw-semibold">
-                                🏢 회사명 <span class="text-danger">*</span>
+
+                        <div class="mb-3">
+                            <label for="contact" class="form-label fw-semibold">
+                                연락처 <span class="text-danger">*</span>
                             </label>
-                            <input type="text" class="form-control form-control-lg" id="company" name="company" 
-                                   placeholder="예: ABC 이사서비스" required>
+                            <input type="text" class="form-control" id="contact" name="contact" 
+                                   placeholder="예: 010-1234-5678 또는 abc@email.com" required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="description" class="form-label fw-semibold">
+                                채용 내용 <span class="text-danger">*</span>
+                            </label>
+                            <textarea class="form-control" id="description" name="description" rows="6" 
+                                      placeholder="근무 조건, 급여, 근무 시간, 요구 사항 등을 자세히 작성해주세요." required></textarea>
+                            <div class="form-text">구체적이고 친절한 설명을 작성해주세요.</div>
                         </div>
                     </div>
-
-                    <div class="mb-4">
-                        <label for="contact" class="form-label fw-semibold">
-                            📞 연락처 <span class="text-danger">*</span>
-                        </label>
-                        <input type="text" class="form-control form-control-lg" id="contact" name="contact" 
-                               placeholder="예: 010-1234-5678 또는 abc@email.com" required>
-                    </div>
-
-                    <div class="mb-4">
-                        <label for="description" class="form-label fw-semibold">
-                            📄 구인 내용 <span class="text-danger">*</span>
-                        </label>
-                        <textarea class="form-control" id="description" name="description" rows="8" 
-                                  placeholder="근무 조건, 급여, 근무 시간, 요구 사항 등을 자세히 작성해주세요." required></textarea>
-                        <div class="form-text">구체적이고 친절한 설명이 더 좋은 지원자를 모집하는데 도움이 됩니다.</div>
-                    </div>
-
-                    <div class="d-grid gap-3 d-md-flex justify-content-md-end">
-                        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-lg">
-                            ← 취소
-                        </a>
-                        <button type="submit" class="btn btn-primary btn-lg">
-                            ✓ 구인공고 등록하기
-                        </button>
+                    <div class="card-footer">
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                                취소
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                채용공고 등록하기
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>
