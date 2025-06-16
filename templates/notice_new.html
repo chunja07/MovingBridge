@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}공지사항 작성 - 무빙브릿지{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="text-center mb-4">
+                <div class="post-card-icon text-warning mb-3">📋</div>
+                <h1 class="section-title">공지사항 작성</h1>
+                <p class="lead text-muted">중요한 정보를 커뮤니티에 공지하세요</p>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0 fw-bold text-center">새로운 공지사항</h4>
+                </div>
+                <form method="POST">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="title" class="form-label fw-semibold">
+                                제목 <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="title" name="title" 
+                                   placeholder="공지사항 제목을 입력하세요" required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="content" class="form-label fw-semibold">
+                                내용 <span class="text-danger">*</span>
+                            </label>
+                            <textarea class="form-control" id="content" name="content" rows="8" 
+                                      placeholder="공지사항 내용을 상세히 작성해주세요." required></textarea>
+                            <div class="form-text">명확하고 이해하기 쉽게 작성해주세요.</div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('notice_list') }}" class="btn btn-outline-secondary">
+                                취소
+                            </a>
+                            <button type="submit" class="btn btn-warning">
+                                공지사항 등록하기
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

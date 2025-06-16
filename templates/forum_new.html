@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}글 작성 - 생활 포럼{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="text-center mb-4">
+                <div class="post-card-icon text-info mb-3">💬</div>
+                <h1 class="section-title">글 작성</h1>
+                <p class="lead text-muted">자유롭게 생각과 정보를 공유하세요</p>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0 fw-bold text-center">새로운 글</h4>
+                </div>
+                <form method="POST">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="author" class="form-label fw-semibold">
+                                    작성자명 <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" class="form-control" id="author" name="author" 
+                                       placeholder="예: 김민수" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="title" class="form-label fw-semibold">
+                                    제목 <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" class="form-control" id="title" name="title" 
+                                       placeholder="글 제목을 입력하세요" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="content" class="form-label fw-semibold">
+                                내용 <span class="text-danger">*</span>
+                            </label>
+                            <textarea class="form-control" id="content" name="content" rows="8" 
+                                      placeholder="자유롭게 내용을 작성해주세요." required></textarea>
+                            <div class="form-text">서로 존중하며 유익한 정보를 공유해주세요.</div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('forum_list') }}" class="btn btn-outline-secondary">
+                                취소
+                            </a>
+                            <button type="submit" class="btn btn-info">
+                                글 등록하기
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

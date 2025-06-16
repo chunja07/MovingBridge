@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}{{ forum.title }} - 생활 포럼{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="text-center mb-4">
+                <a href="{{ url_for('forum_list') }}" class="btn btn-outline-secondary mb-3">
+                    ← 포럼 목록으로
+                </a>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="d-flex align-items-center mb-3">
+                                <span class="post-card-icon text-info me-3">💬</span>
+                                <div>
+                                    <h1 class="fw-bold mb-1">{{ forum.title }}</h1>
+                                    <h5 class="text-muted mb-1">작성자: {{ forum.author }}</h5>
+                                    <small class="text-muted">{{ forum.timestamp|datetime }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        <span class="badge bg-info fs-6">포럼</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="bg-light p-4 rounded-3">
+                        <div class="lh-lg" style="white-space: pre-line;">{{ forum.content }}</div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-center">
+                        <a href="{{ url_for('forum_new') }}" class="btn btn-outline-info">
+                            💬 새 글 작성
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
