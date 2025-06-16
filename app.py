@@ -25,10 +25,14 @@ def index():
     # Sort posts by timestamp (newest first)
     sorted_jobs = sorted(job_posts.items(), key=lambda x: x[1]['timestamp'], reverse=True)
     sorted_intros = sorted(intro_posts.items(), key=lambda x: x[1]['timestamp'], reverse=True)
+    sorted_notices = sorted(notice_posts.items(), key=lambda x: x[1]['timestamp'], reverse=True)
+    sorted_forums = sorted(forum_posts.items(), key=lambda x: x[1]['timestamp'], reverse=True)
     
     return render_template('index.html', 
                          job_posts=sorted_jobs, 
-                         intro_posts=sorted_intros)
+                         intro_posts=sorted_intros,
+                         notice_posts=sorted_notices,
+                         forum_posts=sorted_forums)
 
 @app.route('/job/new', methods=['GET', 'POST'])
 def job_new():

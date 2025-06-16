@@ -9,12 +9,8 @@
         <h1 class="display-4 fw-bold mb-4">외국인 근로자와 이사업체를 연결하는 플랫폼</h1>
         <p class="lead mb-5">안전하고 신뢰할 수 있는 일자리를 찾아보세요</p>
         <div class="d-flex justify-content-center gap-3 flex-wrap">
-            <a href="{{ url_for('intro_new') }}" class="btn btn-light btn-lg">
-                👤 자기소개 등록하기
-            </a>
-            <a href="{{ url_for('job_new') }}" class="btn btn-outline-light btn-lg">
-                📢 채용공고 등록하기
-            </a>
+            <a href="{{ url_for('intro_new') }}" class="btn btn-light btn-lg">👤 자기소개 등록하기</a>
+            <a href="{{ url_for('job_new') }}" class="btn btn-outline-light btn-lg">📢 채용공고 등록하기</a>
         </div>
     </div>
 </div>
@@ -22,12 +18,58 @@
 <div class="container">
 
     <div class="row">
-        <!-- Job Postings Section -->
+        <!-- 공지사항 Section -->
         <div class="col-lg-6 mb-4">
-            <h2 class="section-title">
-                📢 최신 채용공고
-            </h2>
-            
+            <h2 class="section-title">📢 공지사항</h2>
+            {% if notice_posts %}
+                {% for notice_id, notice in notice_posts %}
+                    <div class="card mb-2">
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold">{{ notice.title }}</h5>
+                            <p class="card-text text-muted mb-3">
+                                {{ notice.content[:100] }}{% if notice.content|length > 100 %}...{% endif %}
+                            </p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="post-meta">{{ notice.timestamp|datetime }}</small>
+                                <a href="{{ url_for('notice_view', notice_id=notice.id) }}" class="btn btn-outline-primary btn-sm">자세히 보기</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted">등록된 공지사항이 없습니다.</p>
+            {% endif %}
+        </div>
+
+        <!-- 생활 포럼 Section -->
+        <div class="col-lg-6 mb-4">
+            <h2 class="section-title">🏡 생활 포럼</h2>
+            {% if forum_posts %}
+                {% for forum_id, post in forum_posts %}
+                    <div class="card mb-2">
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold">{{ post.title }}</h5>
+                            <p class="card-text text-muted mb-1">작성자: {{ post.author }}</p>
+                            <p class="card-text text-muted mb-2">
+                                {{ post.content[:100] }}{% if post.content|length > 100 %}...{% endif %}
+                            </p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="post-meta">{{ post.timestamp|datetime }}</small>
+                                <a href="{{ url_for('forum_view', forum_id=post.id) }}" class="btn btn-outline-success btn-sm">자세히 보기</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted">등록된 포럼 글이 없습니다.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- 기존 채용공고 Section -->
+        <div class="col-lg-6 mb-4">
+            <h2 class="section-title">📢 최신 채용공고</h2>
             {% if job_posts %}
                 {% for job_id, job in job_posts %}
                     <div class="card">
@@ -42,9 +84,7 @@
                                     </p>
                                     <div class="d-flex justify-content-between align-items-center">
                                         <small class="post-meta">{{ job.timestamp|datetime }}</small>
-                                        <a href="{{ url_for('job_view', job_id=job.id) }}" class="btn btn-outline-primary btn-sm">
-                                            자세히 보기
-                                        </a>
+                                        <a href="{{ url_for('job_view', job_id=job.id) }}" class="btn btn-outline-primary btn-sm">자세히 보기</a>
                                     </div>
                                 </div>
                             </div>
@@ -57,20 +97,15 @@
                         <div class="post-card-icon text-muted mb-3">📢</div>
                         <h5 class="mb-3">등록된 채용공고가 없습니다</h5>
                         <p class="text-muted mb-4">첫 번째 채용공고를 등록해 보세요!</p>
-                        <a href="{{ url_for('job_new') }}" class="btn btn-primary">
-                            채용공고 등록하기
-                        </a>
+                        <a href="{{ url_for('job_new') }}" class="btn btn-primary">채용공고 등록하기</a>
                     </div>
                 </div>
             {% endif %}
         </div>
 
-        <!-- Self-Introductions Section -->
+        <!-- 기존 자기소개 Section -->
         <div class="col-lg-6 mb-4">
-            <h2 class="section-title">
-                👤 최신 자기소개
-            </h2>
-            
+            <h2 class="section-title">👤 최신 자기소개</h2>
             {% if intro_posts %}
                 {% for intro_id, intro in intro_posts %}
                     <div class="card">
@@ -88,9 +123,7 @@
                                     </p>
                                     <div class="d-flex justify-content-between align-items-center">
                                         <small class="post-meta">{{ intro.timestamp|datetime }}</small>
-                                        <a href="{{ url_for('intro_view', intro_id=intro.id) }}" class="btn btn-outline-success btn-sm">
-                                            자세히 보기
-                                        </a>
+                                        <a href="{{ url_for('intro_view', intro_id=intro.id) }}" class="btn btn-outline-success btn-sm">자세히 보기</a>
                                     </div>
                                 </div>
                             </div>
@@ -103,9 +136,7 @@
                         <div class="post-card-icon text-muted mb-3">👤</div>
                         <h5 class="mb-3">등록된 자기소개가 없습니다</h5>
                         <p class="text-muted mb-4">첫 번째 자기소개를 등록해 보세요!</p>
-                        <a href="{{ url_for('intro_new') }}" class="btn btn-success">
-                            자기소개 등록하기
-                        </a>
+                        <a href="{{ url_for('intro_new') }}" class="btn btn-success">자기소개 등록하기</a>
                     </div>
                 </div>
             {% endif %}
