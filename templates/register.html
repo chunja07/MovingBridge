@@ -5,41 +5,120 @@
 {% block content %}
 <div class="container">
     <div class="row justify-content-center">
-        <div class="col-md-6">
+        <div class="col-md-8 col-lg-6">
             <div class="card">
                 <div class="card-header text-center">
-                    <h3 class="mb-0">🔐 회원가입</h3>
+                    <h3 class="mb-2">회원가입</h3>
                     <p class="text-muted mb-0">무빙브릿지 커뮤니티에 참여하세요</p>
                 </div>
-                <div class="card-body">
-                    <form method="POST">
-                        <div class="mb-3">
-                            <label for="username" class="form-label">사용자명</label>
-                            <input type="text" class="form-control" id="username" name="username" 
-                                   required minlength="3" placeholder="3글자 이상 입력해주세요">
-                            <div class="form-text">한글, 영문, 숫자를 사용할 수 있습니다.</div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="password" class="form-label">비밀번호</label>
-                            <input type="password" class="form-control" id="password" name="password" 
-                                   required minlength="8" placeholder="8글자 이상, 영문자+숫자+특수문자 포함">
-                            <div class="form-text">
-                                비밀번호는 8글자 이상이며, 영문자, 숫자, 특수문자(!@#$%^&*(),.?":{}|<>)를 각각 최소 1개씩 포함해야 합니다.
+                <div class="card-body p-4">
+                    <form method="POST" id="registerForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="username" class="form-label">아이디 <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="username" name="username" 
+                                       required minlength="3" maxlength="20" 
+                                       placeholder="3-20글자, 영문/한글/숫자">
+                                <div class="form-text">영문, 한글, 숫자 조합 가능</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label">이메일 주소 <span class="text-danger">*</span></label>
+                                <input type="email" class="form-control" id="email" name="email" 
+                                       required placeholder="example@domain.com">
+                                <div class="form-text">알림 및 계정 복구용</div>
                             </div>
                         </div>
+                        
                         <div class="mb-3">
-                            <label for="confirm_password" class="form-label">비밀번호 확인</label>
+                            <label for="password" class="form-label">비밀번호 <span class="text-danger">*</span></label>
+                            <input type="password" class="form-control" id="password" name="password" 
+                                   required minlength="8" placeholder="8글자 이상, 영문+숫자+특수문자">
+                            <div class="form-text">
+                                <small>8글자 이상, 영문자·숫자·특수문자(!@#$%^&*(),.?":{}|<>) 각각 최소 1개 포함</small>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="confirm_password" class="form-label">비밀번호 확인 <span class="text-danger">*</span></label>
                             <input type="password" class="form-control" id="confirm_password" name="confirm_password" 
                                    required placeholder="비밀번호를 다시 입력해주세요">
                         </div>
+                        
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="terms_agreed" name="terms_agreed" required>
+                                <label class="form-check-label" for="terms_agreed">
+                                    <span class="text-danger">*</span> 
+                                    <a href="#" class="text-decoration-none" data-bs-toggle="modal" data-bs-target="#termsModal">
+                                        이용약관
+                                    </a> 및 
+                                    <a href="#" class="text-decoration-none" data-bs-toggle="modal" data-bs-target="#privacyModal">
+                                        개인정보처리방침
+                                    </a>에 동의합니다
+                                </label>
+                            </div>
+                        </div>
+                        
                         <div class="d-grid">
-                            <button type="submit" class="btn btn-success">회원가입</button>
+                            <button type="submit" class="btn btn-success btn-lg">회원가입</button>
                         </div>
                     </form>
                 </div>
                 <div class="card-footer text-center">
-                    <p class="mb-0">이미 계정이 있으신가요? <a href="{{ url_for('login') }}">로그인하기</a></p>
+                    <p class="mb-0">이미 계정이 있으신가요? 
+                        <a href="{{ url_for('login') }}" class="text-decoration-none fw-semibold">로그인하기</a>
+                    </p>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Terms Modal -->
+<div class="modal fade" id="termsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">이용약관</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h6>제1조 (목적)</h6>
+                <p>이 약관은 무빙브릿지(이하 "회사")가 제공하는 서비스의 이용조건 및 절차에 관한 사항을 규정함을 목적으로 합니다.</p>
+                
+                <h6>제2조 (서비스 제공)</h6>
+                <p>회사는 외국인 근로자와 이사업체 간의 연결 플랫폼 서비스를 제공합니다.</p>
+                
+                <h6>제3조 (회원의 의무)</h6>
+                <p>회원은 서비스 이용 시 관련 법령과 본 약관을 준수해야 하며, 타인의 권리를 침해하거나 불법적인 활동을 해서는 안 됩니다.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Privacy Modal -->
+<div class="modal fade" id="privacyModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">개인정보처리방침</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h6>1. 개인정보 수집 목적</h6>
+                <p>회원가입, 서비스 제공, 고객지원, 서비스 개선을 위해 개인정보를 수집합니다.</p>
+                
+                <h6>2. 수집하는 개인정보 항목</h6>
+                <p>아이디, 이메일 주소, 비밀번호(암호화 저장)</p>
+                
+                <h6>3. 개인정보 보유기간</h6>
+                <p>회원 탈퇴 시까지 보유하며, 탈퇴 후 즉시 삭제합니다.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
             </div>
         </div>
     </div>

@@ -249,33 +249,48 @@ def require_admin():
 def register():
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
+        email = request.form.get('email', '').strip()
         password = request.form.get('password', '')
         confirm_password = request.form.get('confirm_password', '')
+        terms_agreed = request.form.get('terms_agreed') == 'on'
         
-        # Validation
-        if not username or not password:
-            flash('사용자명과 비밀번호를 모두 입력해주세요.', 'error')
+        # Basic validation
+        if not username or not email or not password:
+            flash('모든 필수 항목을 입력해주세요.', 'error')
             return render_template('register.html')
         
+        if not terms_agreed:
+            flash('이용약관에 동의해주세요.', 'error')
+            return render_template('register.html')
+        
+        # Username validation
         if len(username) < 3:
             flash('사용자명은 3글자 이상이어야 합니다.', 'error')
             return render_template('register.html')
         
+        if len(username) > 20:
+            flash('사용자명은 20글자 이하여야 합니다.', 'error')
+            return render_template('register.html')
+        
+        # Email validation
+        email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        if not re.match(email_pattern, email):
+            flash('올바른 이메일 주소를 입력해주세요.', 'error')
+            return render_template('register.html')
+        
+        # Password validation
         if len(password) < 8:
             flash('비밀번호는 8글자 이상이어야 합니다.', 'error')
             return render_template('register.html')
         
-        # Check for special character
         if not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
-            flash('비밀번호에는 최소 1개의 특수문자(!@#$%^&*(),.?":{}|<>)가 포함되어야 합니다.', 'error')
+            flash('비밀번호에는 최소 1개의 특수문자가 포함되어야 합니다.', 'error')
             return render_template('register.html')
         
-        # Check for at least one number
         if not re.search(r'\d', password):
             flash('비밀번호에는 최소 1개의 숫자가 포함되어야 합니다.', 'error')
             return render_template('register.html')
         
-        # Check for at least one letter
         if not re.search(r'[a-zA-Z]', password):
             flash('비밀번호에는 최소 1개의 영문자가 포함되어야 합니다.', 'error')
             return render_template('register.html')
@@ -284,20 +299,26 @@ def register():
             flash('비밀번호가 일치하지 않습니다.', 'error')
             return render_template('register.html')
         
-        # Check if username already exists
+        # Check if username or email already exists
         conn = get_db_connection()
-        existing_user = conn.execute('SELECT id FROM users WHERE username = ?', (username,)).fetchone()
+        existing_user = conn.execute('SELECT id FROM users WHERE username = ? OR email = ?', (username, email)).fetchone()
         
         if existing_user:
+            existing_username = conn.execute('SELECT id FROM users WHERE username = ?', (username,)).fetchone()
+            existing_email = conn.execute('SELECT id FROM users WHERE email = ?', (email,)).fetchone()
             conn.close()
-            flash('이미 사용 중인 사용자명입니다.', 'error')
+            
+            if existing_username:
+                flash('이미 사용 중인 사용자명입니다.', 'error')
+            if existing_email:
+                flash('이미 사용 중인 이메일 주소입니다.', 'error')
             return render_template('register.html')
         
         # Create new user
         hashed_password = generate_password_hash(password)
         try:
-            conn.execute('INSERT INTO users (username, password) VALUES (?, ?)', 
-                        (username, hashed_password))
+            conn.execute('INSERT INTO users (username, email, password) VALUES (?, ?, ?)', 
+                        (username, email, hashed_password))
             conn.commit()
             conn.close()
             
@@ -313,27 +334,29 @@ def register():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form.get('username', '').strip()
+        login_id = request.form.get('username', '').strip()  # Can be username or email
         password = request.form.get('password', '')
         
-        if not username or not password:
-            flash('사용자명과 비밀번호를 모두 입력해주세요.', 'error')
+        if not login_id or not password:
+            flash('아이디와 비밀번호를 모두 입력해주세요.', 'error')
             return render_template('login.html')
         
         conn = get_db_connection()
-        user = conn.execute('SELECT * FROM users WHERE username = ?', (username,)).fetchone()
+        # Try to find user by username or email
+        user = conn.execute('SELECT * FROM users WHERE username = ? OR email = ?', (login_id, login_id)).fetchone()
         conn.close()
         
         if user and check_password_hash(user['password'], password):
             session['user_id'] = user['id']
             session['username'] = user['username']
+            session['email'] = user['email']
             flash(f'{user["username"]}님 환영합니다!', 'success')
             
             # Redirect to intended page or home
             next_page = request.args.get('next')
             return redirect(next_page) if next_page else redirect(url_for('index'))
         else:
-            flash('사용자명 또는 비밀번호가 올바르지 않습니다.', 'error')
+            flash('아이디 또는 비밀번호가 올바르지 않습니다.', 'error')
     
     return render_template('login.html')
 
