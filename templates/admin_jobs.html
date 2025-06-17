@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}채용공고 관리 - 무빙브릿지{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="section-title">📢 채용공고 관리</h1>
+        <div>
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary me-2">← 대시보드</a>
+            <a href="{{ url_for('job_new') }}" class="btn btn-primary">새 채용공고 작성</a>
+        </div>
+    </div>
+
+    {% if job_posts %}
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>제목</th>
+                                <th>회사명</th>
+                                <th>연락처</th>
+                                <th>등록일</th>
+                                <th>작업</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for job_id, job in job_posts %}
+                                <tr>
+                                    <td>{{ job.id }}</td>
+                                    <td>
+                                        <strong>{{ job.title }}</strong><br>
+                                        <small class="text-muted">{{ job.description[:50] }}{% if job.description|length > 50 %}...{% endif %}</small>
+                                    </td>
+                                    <td>{{ job.company }}</td>
+                                    <td>{{ job.contact }}</td>
+                                    <td>{{ job.timestamp|datetime }}</td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{{ url_for('job_view', job_id=job.id) }}" class="btn btn-outline-primary btn-sm">보기</a>
+                                            <form method="POST" action="{{ url_for('admin_delete_job', job_id=job.id) }}" class="d-inline" 
+                                                  onsubmit="return confirm('정말로 이 채용공고를 삭제하시겠습니까?');">
+                                                <button type="submit" class="btn btn-outline-danger btn-sm">삭제</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="card text-center">
+            <div class="card-body py-5">
+                <div class="post-card-icon text-muted mb-3">📢</div>
+                <h5 class="mb-3">등록된 채용공고가 없습니다</h5>
+                <p class="text-muted mb-4">첫 번째 채용공고를 작성해 보세요!</p>
+                <a href="{{ url_for('job_new') }}" class="btn btn-primary">
+                    채용공고 작성하기
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

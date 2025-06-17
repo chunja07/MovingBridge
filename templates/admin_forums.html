@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}포럼 관리 - 무빙브릿지{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="section-title">💬 포럼 관리</h1>
+        <div>
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary me-2">← 대시보드</a>
+            <a href="{{ url_for('forum_new') }}" class="btn btn-warning">새 포럼 글 작성</a>
+        </div>
+    </div>
+
+    {% if forum_posts %}
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>제목</th>
+                                <th>작성자</th>
+                                <th>내용</th>
+                                <th>등록일</th>
+                                <th>작업</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for forum_id, forum in forum_posts %}
+                                <tr>
+                                    <td>{{ forum.id }}</td>
+                                    <td>
+                                        <strong>{{ forum.title }}</strong>
+                                    </td>
+                                    <td>{{ forum.author }}</td>
+                                    <td>
+                                        <small class="text-muted">{{ forum.content[:60] }}{% if forum.content|length > 60 %}...{% endif %}</small>
+                                    </td>
+                                    <td>{{ forum.timestamp|datetime }}</td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{{ url_for('forum_view', forum_id=forum.id) }}" class="btn btn-outline-warning btn-sm">보기</a>
+                                            <form method="POST" action="{{ url_for('admin_delete_forum', forum_id=forum.id) }}" class="d-inline" 
+                                                  onsubmit="return confirm('정말로 이 포럼 게시글을 삭제하시겠습니까?');">
+                                                <button type="submit" class="btn btn-outline-danger btn-sm">삭제</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="card text-center">
+            <div class="card-body py-5">
+                <div class="post-card-icon text-muted mb-3">💬</div>
+                <h5 class="mb-3">등록된 포럼 게시글이 없습니다</h5>
+                <p class="text-muted mb-4">첫 번째 포럼 게시글을 작성해 보세요!</p>
+                <a href="{{ url_for('forum_new') }}" class="btn btn-warning">
+                    포럼 글 작성하기
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

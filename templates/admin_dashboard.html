@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}관리자 대시보드 - 무빙브릿지{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="section-title">🔧 관리자 대시보드</h1>
+        <div>
+            <span class="badge bg-success me-2">관리자 로그인됨</span>
+            <a href="{{ url_for('admin_logout') }}" class="btn btn-outline-secondary btn-sm">로그아웃</a>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-5">
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <div class="post-card-icon text-primary mb-2">📢</div>
+                    <h3 class="card-title">{{ stats.total_jobs }}</h3>
+                    <p class="card-text text-muted">채용공고</p>
+                    <a href="{{ url_for('admin_jobs') }}" class="btn btn-outline-primary btn-sm">관리</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <div class="post-card-icon text-success mb-2">👤</div>
+                    <h3 class="card-title">{{ stats.total_intros }}</h3>
+                    <p class="card-text text-muted">자기소개</p>
+                    <a href="{{ url_for('admin_intros') }}" class="btn btn-outline-success btn-sm">관리</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <div class="post-card-icon text-info mb-2">📋</div>
+                    <h3 class="card-title">{{ stats.total_notices }}</h3>
+                    <p class="card-text text-muted">공지사항</p>
+                    <a href="{{ url_for('admin_notices') }}" class="btn btn-outline-info btn-sm">관리</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <div class="post-card-icon text-warning mb-2">💬</div>
+                    <h3 class="card-title">{{ stats.total_forums }}</h3>
+                    <p class="card-text text-muted">포럼 게시글</p>
+                    <a href="{{ url_for('admin_forums') }}" class="btn btn-outline-warning btn-sm">관리</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">빠른 작업</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-2">
+                            <a href="{{ url_for('notice_new') }}" class="btn btn-info w-100">새 공지사항 작성</a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{{ url_for('forum_new') }}" class="btn btn-warning w-100">새 포럼 글 작성</a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{{ url_for('job_list') }}" class="btn btn-primary w-100">채용공고 보기</a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{{ url_for('intro_list') }}" class="btn btn-success w-100">자기소개 보기</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">최근 채용공고</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_jobs %}
+                        {% for job_id, job in recent_jobs %}
+                            <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                                <div>
+                                    <strong>{{ job.title }}</strong><br>
+                                    <small class="text-muted">{{ job.company }} | {{ job.timestamp|datetime }}</small>
+                                </div>
+                                <a href="{{ url_for('job_view', job_id=job.id) }}" class="btn btn-outline-primary btn-sm">보기</a>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">등록된 채용공고가 없습니다.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">최근 자기소개</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_intros %}
+                        {% for intro_id, intro in recent_intros %}
+                            <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                                <div>
+                                    <strong>{{ intro.name }}님</strong><br>
+                                    <small class="text-muted">{{ intro.nationality }} | {{ intro.timestamp|datetime }}</small>
+                                </div>
+                                <a href="{{ url_for('intro_view', intro_id=intro.id) }}" class="btn btn-outline-success btn-sm">보기</a>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">등록된 자기소개가 없습니다.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

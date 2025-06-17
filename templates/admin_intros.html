@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}자기소개 관리 - 무빙브릿지{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="section-title">👤 자기소개 관리</h1>
+        <div>
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary me-2">← 대시보드</a>
+            <a href="{{ url_for('intro_new') }}" class="btn btn-success">새 자기소개 작성</a>
+        </div>
+    </div>
+
+    {% if intro_posts %}
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>이름</th>
+                                <th>국적</th>
+                                <th>언어</th>
+                                <th>등록일</th>
+                                <th>작업</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for intro_id, intro in intro_posts %}
+                                <tr>
+                                    <td>{{ intro.id }}</td>
+                                    <td>
+                                        <strong>{{ intro.name }}님</strong><br>
+                                        <small class="text-muted">{{ intro.introduction[:50] }}{% if intro.introduction|length > 50 %}...{% endif %}</small>
+                                    </td>
+                                    <td>{{ intro.nationality }}</td>
+                                    <td>{{ intro.languages }}</td>
+                                    <td>{{ intro.timestamp|datetime }}</td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{{ url_for('intro_view', intro_id=intro.id) }}" class="btn btn-outline-success btn-sm">보기</a>
+                                            <form method="POST" action="{{ url_for('admin_delete_intro', intro_id=intro.id) }}" class="d-inline" 
+                                                  onsubmit="return confirm('정말로 이 자기소개를 삭제하시겠습니까?');">
+                                                <button type="submit" class="btn btn-outline-danger btn-sm">삭제</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="card text-center">
+            <div class="card-body py-5">
+                <div class="post-card-icon text-muted mb-3">👤</div>
+                <h5 class="mb-3">등록된 자기소개가 없습니다</h5>
+                <p class="text-muted mb-4">첫 번째 자기소개를 작성해 보세요!</p>
+                <a href="{{ url_for('intro_new') }}" class="btn btn-success">
+                    자기소개 작성하기
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

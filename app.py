@@ -2,13 +2,17 @@ import os
 import logging
 import sqlite3
 from datetime import datetime
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, session
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key")
+
+# Admin credentials (in production, use environment variables)
+ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "admin")
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "admin123")
 
 # In-memory data storage
 job_posts = {}
@@ -204,6 +208,157 @@ def forum_view(forum_id):
     
     forum = forum_posts[forum_id]
     return render_template('forum_view.html', forum=forum)
+
+# Admin authentication helper
+def is_admin():
+    return session.get('admin_logged_in', False)
+
+def require_admin():
+    if not is_admin():
+        flash('관리자 권한이 필요합니다.', 'error')
+        return redirect(url_for('admin_login'))
+    return None
+
+# Admin routes
+@app.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        
+        if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+            session['admin_logged_in'] = True
+            flash('관리자로 로그인되었습니다.', 'success')
+            return redirect(url_for('admin_dashboard'))
+        else:
+            flash('잘못된 관리자 정보입니다.', 'error')
+    
+    return render_template('admin_login.html')
+
+@app.route('/admin/logout')
+def admin_logout():
+    session.pop('admin_logged_in', None)
+    flash('로그아웃되었습니다.', 'success')
+    return redirect(url_for('index'))
+
+@app.route('/admin')
+def admin_dashboard():
+    auth_check = require_admin()
+    if auth_check:
+        return auth_check
+    
+    # Statistics
+    stats = {
+        'total_jobs': len(job_posts),
+        'total_intros': len(intro_posts),
+        'total_notices': len(notice_posts),
+        'total_forums': len(forum_posts)
+    }
+    
+    # Recent posts
+    recent_jobs = sorted(job_posts.items(), key=lambda x: x[1]['timestamp'], reverse=True)[:5]
+    recent_intros = sorted(intro_posts.items(), key=lambda x: x[1]['timestamp'], reverse=True)[:5]
+    recent_notices = sorted(notice_posts.items(), key=lambda x: x[1]['timestamp'], reverse=True)[:5]
+    recent_forums = sorted(forum_posts.items(), key=lambda x: x[1]['timestamp'], reverse=True)[:5]
+    
+    return render_template('admin_dashboard.html', 
+                         stats=stats,
+                         recent_jobs=recent_jobs,
+                         recent_intros=recent_intros,
+                         recent_notices=recent_notices,
+                         recent_forums=recent_forums)
+
+@app.route('/admin/jobs')
+def admin_jobs():
+    auth_check = require_admin()
+    if auth_check:
+        return auth_check
+    
+    sorted_jobs = sorted(job_posts.items(), key=lambda x: x[1]['timestamp'], reverse=True)
+    return render_template('admin_jobs.html', job_posts=sorted_jobs)
+
+@app.route('/admin/jobs/<int:job_id>/delete', methods=['POST'])
+def admin_delete_job(job_id):
+    auth_check = require_admin()
+    if auth_check:
+        return auth_check
+    
+    if job_id in job_posts:
+        del job_posts[job_id]
+        flash('채용공고가 삭제되었습니다.', 'success')
+    else:
+        flash('존재하지 않는 채용공고입니다.', 'error')
+    
+    return redirect(url_for('admin_jobs'))
+
+@app.route('/admin/intros')
+def admin_intros():
+    auth_check = require_admin()
+    if auth_check:
+        return auth_check
+    
+    sorted_intros = sorted(intro_posts.items(), key=lambda x: x[1]['timestamp'], reverse=True)
+    return render_template('admin_intros.html', intro_posts=sorted_intros)
+
+@app.route('/admin/intros/<int:intro_id>/delete', methods=['POST'])
+def admin_delete_intro(intro_id):
+    auth_check = require_admin()
+    if auth_check:
+        return auth_check
+    
+    if intro_id in intro_posts:
+        del intro_posts[intro_id]
+        flash('자기소개가 삭제되었습니다.', 'success')
+    else:
+        flash('존재하지 않는 자기소개입니다.', 'error')
+    
+    return redirect(url_for('admin_intros'))
+
+@app.route('/admin/notices')
+def admin_notices():
+    auth_check = require_admin()
+    if auth_check:
+        return auth_check
+    
+    sorted_notices = sorted(notice_posts.items(), key=lambda x: x[1]['timestamp'], reverse=True)
+    return render_template('admin_notices.html', notice_posts=sorted_notices)
+
+@app.route('/admin/notices/<int:notice_id>/delete', methods=['POST'])
+def admin_delete_notice(notice_id):
+    auth_check = require_admin()
+    if auth_check:
+        return auth_check
+    
+    if notice_id in notice_posts:
+        del notice_posts[notice_id]
+        flash('공지사항이 삭제되었습니다.', 'success')
+    else:
+        flash('존재하지 않는 공지사항입니다.', 'error')
+    
+    return redirect(url_for('admin_notices'))
+
+@app.route('/admin/forums')
+def admin_forums():
+    auth_check = require_admin()
+    if auth_check:
+        return auth_check
+    
+    sorted_forums = sorted(forum_posts.items(), key=lambda x: x[1]['timestamp'], reverse=True)
+    return render_template('admin_forums.html', forum_posts=sorted_forums)
+
+@app.route('/admin/forums/<int:forum_id>/delete', methods=['POST'])
+def admin_delete_forum(forum_id):
+    auth_check = require_admin()
+    if auth_check:
+        return auth_check
+    
+    if forum_id in forum_posts:
+        del forum_posts[forum_id]
+        flash('포럼 게시글이 삭제되었습니다.', 'success')
+    else:
+        flash('존재하지 않는 게시글입니다.', 'error')
+    
+    return redirect(url_for('admin_forums'))
 
 @app.template_filter('datetime')
 def datetime_filter(dt):
