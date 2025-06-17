@@ -1,5 +1,6 @@
 import os
 import logging
+import sqlite3
 from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, flash
 
@@ -211,3 +212,8 @@ def datetime_filter(dt):
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
+
+def get_db_connection():
+    conn = sqlite3.connect('movingbridge.db')
+    conn.row_factory = sqlite3.Row
+    return conn
