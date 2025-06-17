@@ -196,6 +196,27 @@
                             💬 생활 포럼
                         </a>
                     </li>
+                    {% if session.get('user_id') %}
+                    <li class="nav-item">
+                        <span class="nav-link text-success">👋 {{ session.username }}님</span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('logout') }}">
+                            로그아웃
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('login') }}">
+                            로그인
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('register') }}">
+                            회원가입
+                        </a>
+                    </li>
+                    {% endif %}
                     {% if session.get('admin_logged_in') %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('admin_dashboard') }}">

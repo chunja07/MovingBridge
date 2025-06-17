@@ -4,6 +4,16 @@ import sqlite3
 conn = sqlite3.connect("movingbridge.db")
 c = conn.cursor()
 
+# 사용자 테이블
+c.execute('''
+CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+)
+''')
+
 # 자기소개 테이블
 c.execute('''
 CREATE TABLE IF NOT EXISTS introductions (

@@ -3,6 +3,7 @@ import logging
 import sqlite3
 from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, flash, session
+from werkzeug.security import generate_password_hash, check_password_hash
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -135,7 +136,11 @@ def notice_list():
 
 @app.route('/notice/new', methods=['GET', 'POST'])
 def notice_new():
-    """Page to create new notices"""
+    """Page to create new notices - requires login"""
+    auth_check = require_login()
+    if auth_check:
+        return auth_check
+    
     if request.method == 'POST':
         global notice_counter
         notice_counter += 1
@@ -209,6 +214,25 @@ def forum_view(forum_id):
     forum = forum_posts[forum_id]
     return render_template('forum_view.html', forum=forum)
 
+# User authentication helpers
+def is_logged_in():
+    return 'user_id' in session
+
+def get_current_user():
+    if not is_logged_in():
+        return None
+    
+    conn = get_db_connection()
+    user = conn.execute('SELECT * FROM users WHERE id = ?', (session['user_id'],)).fetchone()
+    conn.close()
+    return user
+
+def require_login():
+    if not is_logged_in():
+        flash('로그인이 필요합니다.', 'error')
+        return redirect(url_for('login'))
+    return None
+
 # Admin authentication helper
 def is_admin():
     return session.get('admin_logged_in', False)
@@ -218,6 +242,93 @@ def require_admin():
         flash('관리자 권한이 필요합니다.', 'error')
         return redirect(url_for('admin_login'))
     return None
+
+# User authentication routes
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '')
+        confirm_password = request.form.get('confirm_password', '')
+        
+        # Validation
+        if not username or not password:
+            flash('사용자명과 비밀번호를 모두 입력해주세요.', 'error')
+            return render_template('register.html')
+        
+        if len(username) < 3:
+            flash('사용자명은 3글자 이상이어야 합니다.', 'error')
+            return render_template('register.html')
+        
+        if len(password) < 6:
+            flash('비밀번호는 6글자 이상이어야 합니다.', 'error')
+            return render_template('register.html')
+        
+        if password != confirm_password:
+            flash('비밀번호가 일치하지 않습니다.', 'error')
+            return render_template('register.html')
+        
+        # Check if username already exists
+        conn = get_db_connection()
+        existing_user = conn.execute('SELECT id FROM users WHERE username = ?', (username,)).fetchone()
+        
+        if existing_user:
+            conn.close()
+            flash('이미 사용 중인 사용자명입니다.', 'error')
+            return render_template('register.html')
+        
+        # Create new user
+        hashed_password = generate_password_hash(password)
+        try:
+            conn.execute('INSERT INTO users (username, password) VALUES (?, ?)', 
+                        (username, hashed_password))
+            conn.commit()
+            conn.close()
+            
+            flash('회원가입이 완료되었습니다. 로그인해주세요.', 'success')
+            return redirect(url_for('login'))
+        except Exception as e:
+            conn.close()
+            flash('회원가입 중 오류가 발생했습니다.', 'error')
+            return render_template('register.html')
+    
+    return render_template('register.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '')
+        
+        if not username or not password:
+            flash('사용자명과 비밀번호를 모두 입력해주세요.', 'error')
+            return render_template('login.html')
+        
+        conn = get_db_connection()
+        user = conn.execute('SELECT * FROM users WHERE username = ?', (username,)).fetchone()
+        conn.close()
+        
+        if user and check_password_hash(user['password'], password):
+            session['user_id'] = user['id']
+            session['username'] = user['username']
+            flash(f'{user["username"]}님 환영합니다!', 'success')
+            
+            # Redirect to intended page or home
+            next_page = request.args.get('next')
+            return redirect(next_page) if next_page else redirect(url_for('index'))
+        else:
+            flash('사용자명 또는 비밀번호가 올바르지 않습니다.', 'error')
+    
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    username = session.get('username', '')
+    session.pop('user_id', None)
+    session.pop('username', None)
+    if username:
+        flash(f'{username}님 로그아웃되었습니다.', 'success')
+    return redirect(url_for('index'))
 
 # Admin routes
 @app.route('/admin/login', methods=['GET', 'POST'])
