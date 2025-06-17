@@ -17,6 +17,7 @@
                     <h4 class="mb-0 fw-bold text-center">새로운 공지사항</h4>
                 </div>
                 <form method="POST">
+                    {{ csrf_token() }}
                     <div class="card-body">
                         <div class="mb-3">
                             <label for="title" class="form-label fw-semibold">

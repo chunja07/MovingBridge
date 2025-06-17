@@ -44,6 +44,7 @@
                                             <a href="{{ url_for('forum_view', forum_id=forum.id) }}" class="btn btn-outline-warning btn-sm">보기</a>
                                             <form method="POST" action="{{ url_for('admin_delete_forum', forum_id=forum.id) }}" class="d-inline" 
                                                   onsubmit="return confirm('정말로 이 포럼 게시글을 삭제하시겠습니까?');">
+                                                {{ csrf_token() }}
                                                 <button type="submit" class="btn btn-outline-danger btn-sm">삭제</button>
                                             </form>
                                         </div>
