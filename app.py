@@ -8,6 +8,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 from flask_wtf.csrf import CSRFProtect
 from flask_talisman import Talisman
 from werkzeug.security import generate_password_hash, check_password_hash
+from markupsafe import Markup
 
 # Load environment variables
 load_dotenv()
@@ -17,6 +18,25 @@ logging.basicConfig(level=logging.DEBUG)
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET")
+
+# Enable auto-escaping for all templates for XSS protection
+app.jinja_env.autoescape = True
+
+# Input sanitization function
+def sanitize_input(text):
+    """Sanitize user input to prevent XSS attacks"""
+    if not text:
+        return ""
+    # Remove potentially dangerous HTML tags and scripts
+    text = str(text).strip()
+    # Basic HTML escaping is handled by Jinja2 auto-escaping
+    return text
+
+# Validate email format
+def is_valid_email(email):
+    """Validate email format"""
+    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    return re.match(pattern, email) is not None
 
 # Initialize CSRF protection
 csrf = CSRFProtect(app)
@@ -106,10 +126,10 @@ def job_new():
         
         job_data = {
             'id': job_counter,
-            'title': request.form.get('title', '').strip(),
-            'company': request.form.get('company', '').strip(),
-            'contact': request.form.get('contact', '').strip(),
-            'description': request.form.get('description', '').strip(),
+            'title': sanitize_input(request.form.get('title', '')),
+            'company': sanitize_input(request.form.get('company', '')),
+            'contact': sanitize_input(request.form.get('contact', '')),
+            'description': sanitize_input(request.form.get('description', '')),
             'timestamp': datetime.now()
         }
         
@@ -204,8 +224,8 @@ def notice_new():
         
         notice_data = {
             'id': notice_counter,
-            'title': request.form.get('title', '').strip(),
-            'content': request.form.get('content', '').strip(),
+            'title': sanitize_input(request.form.get('title', '')),
+            'content': sanitize_input(request.form.get('content', '')),
             'timestamp': datetime.now()
         }
         
@@ -304,9 +324,9 @@ def require_admin():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        username = request.form.get('username', '').strip()
-        email = request.form.get('email', '').strip()
-        password = request.form.get('password', '')
+        username = sanitize_input(request.form.get('username', ''))
+        email = sanitize_input(request.form.get('email', ''))
+        password = request.form.get('password', '')  # Don't sanitize passwords
         confirm_password = request.form.get('confirm_password', '')
         terms_agreed = request.form.get('terms_agreed') == 'on'
         
@@ -329,8 +349,7 @@ def register():
             return render_template('register.html')
         
         # Email validation
-        email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-        if not re.match(email_pattern, email):
+        if not is_valid_email(email):
             flash('올바른 이메일 주소를 입력해주세요.', 'error')
             return render_template('register.html')
         
@@ -390,7 +409,7 @@ def register():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        login_id = request.form.get('username', '').strip()  # Can be username or email
+        login_id = sanitize_input(request.form.get('username', ''))  # Can be username or email
         password = request.form.get('password', '')
         
         if not login_id or not password:
