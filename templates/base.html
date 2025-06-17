@@ -196,6 +196,19 @@
                             💬 생활 포럼
                         </a>
                     </li>
+                    {% if session.get('admin_logged_in') %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin_dashboard') }}">
+                            🔧 관리자
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin_login') }}">
+                            🔐 관리자 로그인
+                        </a>
+                    </li>
+                    {% endif %}
                 </ul>
             </div>
         </div>
