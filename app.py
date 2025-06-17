@@ -521,6 +521,11 @@ if __name__ == '__main__':
 # Reaction routes
 @app.route('/react/<string:post_type>/<int:post_id>', methods=['GET', 'POST'])
 def add_reaction(post_type, post_id):
+    if request.method == 'GET':
+        # Return current reaction data for the post
+        reactions = get_post_reactions(post_type, post_id)
+        return jsonify({'success': True, 'reactions': reactions})
+    
     if not is_logged_in():
         return jsonify({'success': False, 'message': '로그인이 필요합니다.'}), 401
     
@@ -529,7 +534,7 @@ def add_reaction(post_type, post_id):
     user_id = session['user_id']
     
     if not emoji:
-        return {'success': False, 'message': '이모지를 선택해주세요.'}, 400
+        return jsonify({'success': False, 'message': '이모지를 선택해주세요.'}), 400
     
     conn = get_db_connection()
     
