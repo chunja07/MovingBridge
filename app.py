@@ -61,12 +61,18 @@ def job_new():
     
     return render_template('job_new.html')
 
+@app.route('/job')
+def job_list():
+    """Page displaying all job postings"""
+    sorted_jobs = sorted(job_posts.items(), key=lambda x: x[1]['timestamp'], reverse=True)
+    return render_template('job_list.html', job_posts=sorted_jobs)
+
 @app.route('/job/<int:job_id>')
 def job_view(job_id):
     """Page to view a specific job posting"""
     if job_id not in job_posts:
         flash('존재하지 않는 구인공고입니다.', 'error')
-        return redirect(url_for('index'))
+        return redirect(url_for('job_list'))
     
     job = job_posts[job_id]
     return render_template('job_view.html', job=job)
@@ -99,12 +105,18 @@ def intro_new():
     
     return render_template('intro_new.html')
 
+@app.route('/intro')
+def intro_list():
+    """Page displaying all self-introductions"""
+    sorted_intros = sorted(intro_posts.items(), key=lambda x: x[1]['timestamp'], reverse=True)
+    return render_template('intro_list.html', intro_posts=sorted_intros)
+
 @app.route('/intro/<int:intro_id>')
 def intro_view(intro_id):
     """Page to view a specific self-introduction"""
     if intro_id not in intro_posts:
         flash('존재하지 않는 자기소개입니다.', 'error')
-        return redirect(url_for('index'))
+        return redirect(url_for('intro_list'))
     
     intro = intro_posts[intro_id]
     return render_template('intro_view.html', intro=intro)

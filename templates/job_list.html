@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}채용공고 게시판 - 무빙브릿지{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="section-title">
+                📢 채용공고 게시판
+            </h1>
+            <p class="text-muted">이사업체의 최신 채용공고를 확인하세요</p>
+        </div>
+        <a href="{{ url_for('job_new') }}" class="btn btn-primary">
+            새 채용공고 등록
+        </a>
+    </div>
+
+    {% if job_posts %}
+        <div class="row">
+            {% for job_id, job in job_posts %}
+                <div class="col-lg-6 col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-start mb-3">
+                                <div class="post-card-icon text-primary me-3">📢</div>
+                                <div class="flex-grow-1">
+                                    <h5 class="card-title fw-bold mb-2">{{ job.title }}</h5>
+                                    <div class="mb-2">
+                                        <span class="badge bg-light text-dark me-2">🏢 {{ job.company }}</span>
+                                    </div>
+                                    <div class="mb-3">
+                                        <small class="text-info fw-semibold">📞 {{ job.contact }}</small>
+                                    </div>
+                                    <p class="card-text text-muted mb-3">
+                                        {{ job.description[:120] }}{% if job.description|length > 120 %}...{% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="post-meta">{{ job.timestamp|datetime }}</small>
+                                <a href="{{ url_for('job_view', job_id=job.id) }}" class="btn btn-outline-primary btn-sm">
+                                    자세히 보기
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="card text-center">
+            <div class="card-body py-5">
+                <div class="post-card-icon text-muted mb-3">📢</div>
+                <h5 class="mb-3">등록된 채용공고가 없습니다</h5>
+                <p class="text-muted mb-4">첫 번째 채용공고를 등록해 보세요!</p>
+                <a href="{{ url_for('job_new') }}" class="btn btn-primary">
+                    채용공고 등록하기
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

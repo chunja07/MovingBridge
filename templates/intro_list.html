@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}자기소개 게시판 - 무빙브릿지{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="section-title">
+                👤 자기소개 게시판
+            </h1>
+            <p class="text-muted">외국인 근로자들의 자기소개를 확인하세요</p>
+        </div>
+        <a href="{{ url_for('intro_new') }}" class="btn btn-success">
+            새 자기소개 등록
+        </a>
+    </div>
+
+    {% if intro_posts %}
+        <div class="row">
+            {% for intro_id, intro in intro_posts %}
+                <div class="col-lg-6 col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-start mb-3">
+                                <div class="post-card-icon text-success me-3">👤</div>
+                                <div class="flex-grow-1">
+                                    <h5 class="card-title fw-bold mb-2">{{ intro.name }}님</h5>
+                                    <div class="mb-2">
+                                        <span class="badge bg-light text-dark me-2">🌍 {{ intro.nationality }}</span>
+                                    </div>
+                                    <div class="mb-3">
+                                        <small class="text-info fw-semibold">💬 {{ intro.languages }}</small>
+                                    </div>
+                                    <p class="card-text text-muted mb-3">
+                                        {{ intro.introduction[:120] }}{% if intro.introduction|length > 120 %}...{% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="post-meta">{{ intro.timestamp|datetime }}</small>
+                                <a href="{{ url_for('intro_view', intro_id=intro.id) }}" class="btn btn-outline-success btn-sm">
+                                    자세히 보기
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="card text-center">
+            <div class="card-body py-5">
+                <div class="post-card-icon text-muted mb-3">👤</div>
+                <h5 class="mb-3">등록된 자기소개가 없습니다</h5>
+                <p class="text-muted mb-4">첫 번째 자기소개를 등록해 보세요!</p>
+                <a href="{{ url_for('intro_new') }}" class="btn btn-success">
+                    자기소개 등록하기
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
