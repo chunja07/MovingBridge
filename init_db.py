@@ -61,6 +61,30 @@ CREATE TABLE IF NOT EXISTS forums (
 )
 ''')
 
+# 이모지 반응 테이블 (채용공고용)
+c.execute('''
+CREATE TABLE IF NOT EXISTS job_reactions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    job_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    emoji TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(job_id, user_id, emoji)
+)
+''')
+
+# 이모지 반응 테이블 (자기소개용)
+c.execute('''
+CREATE TABLE IF NOT EXISTS intro_reactions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    intro_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    emoji TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(intro_id, user_id, emoji)
+)
+''')
+
 conn.commit()
 conn.close()
 print("✅ movingbridge.db 초기화 완료")

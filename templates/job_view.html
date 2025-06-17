@@ -60,6 +60,25 @@
                 </div>
             </div>
             <div class="card-footer">
+                <!-- Reaction Section -->
+                <div class="reaction-section mb-3" data-post-type="job" data-post-id="{{ job.id }}">
+                    <h6 class="mb-2">이 구인공고가 어떠신가요?</h6>
+                    <div class="reaction-buttons mb-2">
+                        {% for emoji in ['👍', '❤️', '💪', '🎯', '👏'] %}
+                            <button class="btn btn-outline-secondary btn-sm reaction-btn me-1 mb-1" 
+                                    data-emoji="{{ emoji }}" 
+                                    onclick="toggleReaction('job', {{ job.id }}, '{{ emoji }}')">
+                                {{ emoji }} <span class="reaction-count" data-emoji="{{ emoji }}">0</span>
+                            </button>
+                        {% endfor %}
+                    </div>
+                    {% if not session.get('user_id') %}
+                        <small class="text-muted">
+                            <a href="{{ url_for('login') }}">로그인</a>하여 반응을 남겨보세요
+                        </small>
+                    {% endif %}
+                </div>
+                
                 <div class="d-flex justify-content-center gap-3">
                     <a href="{{ url_for('job_new') }}" class="btn btn-outline-primary btn-lg">
                         📢 새 구인공고 등록

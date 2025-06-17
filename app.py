@@ -3,7 +3,7 @@ import logging
 import sqlite3
 import re
 from datetime import datetime
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 
 # Configure logging
@@ -517,6 +517,145 @@ def datetime_filter(dt):
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
+
+# Reaction routes
+@app.route('/react/<string:post_type>/<int:post_id>', methods=['POST'])
+def add_reaction(post_type, post_id):
+    if not is_logged_in():
+        return {'success': False, 'message': '로그인이 필요합니다.'}, 401
+    
+    emoji = request.json.get('emoji')
+    user_id = session['user_id']
+    
+    if not emoji:
+        return {'success': False, 'message': '이모지를 선택해주세요.'}, 400
+    
+    conn = get_db_connection()
+    
+    try:
+        if post_type == 'job':
+            # Check if job exists
+            job = conn.execute('SELECT id FROM jobs WHERE id = ?', (post_id,)).fetchone()
+            if not job:
+                return {'success': False, 'message': '존재하지 않는 게시글입니다.'}, 404
+            
+            # Remove existing reaction from this user for this job and emoji
+            conn.execute('DELETE FROM job_reactions WHERE job_id = ? AND user_id = ? AND emoji = ?', 
+                        (post_id, user_id, emoji))
+            
+            # Add new reaction
+            conn.execute('INSERT INTO job_reactions (job_id, user_id, emoji) VALUES (?, ?, ?)', 
+                        (post_id, user_id, emoji))
+            
+        elif post_type == 'intro':
+            # Check if intro exists
+            intro = conn.execute('SELECT id FROM introductions WHERE id = ?', (post_id,)).fetchone()
+            if not intro:
+                return {'success': False, 'message': '존재하지 않는 게시글입니다.'}, 404
+            
+            # Remove existing reaction from this user for this intro and emoji
+            conn.execute('DELETE FROM intro_reactions WHERE intro_id = ? AND user_id = ? AND emoji = ?', 
+                        (post_id, user_id, emoji))
+            
+            # Add new reaction
+            conn.execute('INSERT INTO intro_reactions (intro_id, user_id, emoji) VALUES (?, ?, ?)', 
+                        (post_id, user_id, emoji))
+        else:
+            return {'success': False, 'message': '잘못된 게시글 유형입니다.'}, 400
+        
+        conn.commit()
+        
+        # Get updated reaction counts
+        reactions = get_post_reactions(post_type, post_id)
+        
+        return {'success': True, 'reactions': reactions}
+        
+    except Exception as e:
+        return {'success': False, 'message': '반응 추가 중 오류가 발생했습니다.'}, 500
+    finally:
+        conn.close()
+
+@app.route('/unreact/<string:post_type>/<int:post_id>', methods=['POST'])
+def remove_reaction(post_type, post_id):
+    if not is_logged_in():
+        return {'success': False, 'message': '로그인이 필요합니다.'}, 401
+    
+    emoji = request.json.get('emoji')
+    user_id = session['user_id']
+    
+    if not emoji:
+        return {'success': False, 'message': '이모지를 선택해주세요.'}, 400
+    
+    conn = get_db_connection()
+    
+    try:
+        if post_type == 'job':
+            conn.execute('DELETE FROM job_reactions WHERE job_id = ? AND user_id = ? AND emoji = ?', 
+                        (post_id, user_id, emoji))
+        elif post_type == 'intro':
+            conn.execute('DELETE FROM intro_reactions WHERE intro_id = ? AND user_id = ? AND emoji = ?', 
+                        (post_id, user_id, emoji))
+        else:
+            return {'success': False, 'message': '잘못된 게시글 유형입니다.'}, 400
+        
+        conn.commit()
+        
+        # Get updated reaction counts
+        reactions = get_post_reactions(post_type, post_id)
+        
+        return {'success': True, 'reactions': reactions}
+        
+    except Exception as e:
+        return {'success': False, 'message': '반응 제거 중 오류가 발생했습니다.'}, 500
+    finally:
+        conn.close()
+
+def get_post_reactions(post_type, post_id):
+    """Get reaction counts and user reactions for a post"""
+    conn = get_db_connection()
+    
+    if post_type == 'job':
+        table = 'job_reactions'
+        id_field = 'job_id'
+    elif post_type == 'intro':
+        table = 'intro_reactions'
+        id_field = 'intro_id'
+    else:
+        return {}
+    
+    # Get reaction counts grouped by emoji
+    reaction_counts = conn.execute(f'''
+        SELECT emoji, COUNT(*) as count 
+        FROM {table} 
+        WHERE {id_field} = ? 
+        GROUP BY emoji
+    ''', (post_id,)).fetchall()
+    
+    # Get current user's reactions if logged in
+    user_reactions = []
+    if is_logged_in():
+        user_reactions_result = conn.execute(f'''
+            SELECT emoji 
+            FROM {table} 
+            WHERE {id_field} = ? AND user_id = ?
+        ''', (post_id, session['user_id'])).fetchall()
+        user_reactions = [row['emoji'] for row in user_reactions_result]
+    
+    conn.close()
+    
+    reactions = {}
+    for row in reaction_counts:
+        reactions[row['emoji']] = {
+            'count': row['count'],
+            'user_reacted': row['emoji'] in user_reactions
+        }
+    
+    return reactions
+
+@app.template_filter('get_reactions')
+def get_reactions_filter(post_type, post_id):
+    """Template filter to get reactions for a post"""
+    return get_post_reactions(post_type, post_id)
 
 def get_db_connection():
     conn = sqlite3.connect('movingbridge.db')
