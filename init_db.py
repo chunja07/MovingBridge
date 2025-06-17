@@ -8,12 +8,12 @@ c = conn.cursor()
 c.execute('''
 CREATE TABLE IF NOT EXISTS introductions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT,
-    nationality TEXT,
-    languages TEXT,
-    introduction TEXT,
-    video_link TEXT,
-    timestamp TEXT
+    name TEXT NOT NULL,
+    nationality TEXT NOT NULL,
+    languages TEXT NOT NULL,
+    introduction TEXT NOT NULL,
+    youtube_link TEXT,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
 )
 ''')
 
@@ -21,11 +21,11 @@ CREATE TABLE IF NOT EXISTS introductions (
 c.execute('''
 CREATE TABLE IF NOT EXISTS jobs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT,
-    company TEXT,
-    contact TEXT,
-    description TEXT,
-    timestamp TEXT
+    title TEXT NOT NULL,
+    company TEXT NOT NULL,
+    contact TEXT NOT NULL,
+    description TEXT NOT NULL,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
 )
 ''')
 
@@ -33,9 +33,9 @@ CREATE TABLE IF NOT EXISTS jobs (
 c.execute('''
 CREATE TABLE IF NOT EXISTS notices (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT,
-    content TEXT,
-    timestamp TEXT
+    title TEXT NOT NULL,
+    content TEXT NOT NULL,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
 )
 ''')
 
@@ -43,10 +43,10 @@ CREATE TABLE IF NOT EXISTS notices (
 c.execute('''
 CREATE TABLE IF NOT EXISTS forums (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    author TEXT,
-    title TEXT,
-    content TEXT,
-    timestamp TEXT
+    author TEXT NOT NULL,
+    title TEXT NOT NULL,
+    content TEXT NOT NULL,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
 )
 ''')
 
