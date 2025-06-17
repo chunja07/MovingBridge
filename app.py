@@ -74,16 +74,16 @@ csp = {
 
 talisman = Talisman(
     app,
-    force_https=True,
-    strict_transport_security=True,
+    force_https=False,  # Allow HTTP in development
+    strict_transport_security=False,  # Disable HSTS in development
     content_security_policy=csp,
-    session_cookie_secure=True,
+    session_cookie_secure=False,  # Allow non-HTTPS cookies in development
     session_cookie_http_only=True
 )
 
 # Configure secure session cookies
 app.config.update(
-    SESSION_COOKIE_SECURE=True,
+    SESSION_COOKIE_SECURE=False,  # Allow non-HTTPS cookies in development
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SAMESITE='Lax'
 )
@@ -169,11 +169,11 @@ def intro_new():
         
         intro_data = {
             'id': intro_counter,
-            'name': request.form.get('name', '').strip(),
-            'nationality': request.form.get('nationality', '').strip(),
-            'languages': request.form.get('languages', '').strip(),
-            'youtube_link': request.form.get('youtube_link', '').strip(),
-            'introduction': request.form.get('introduction', '').strip(),
+            'name': sanitize_input(request.form.get('name', '')),
+            'nationality': sanitize_input(request.form.get('nationality', '')),
+            'languages': sanitize_input(request.form.get('languages', '')),
+            'youtube_link': sanitize_input(request.form.get('youtube_link', '')),
+            'introduction': sanitize_input(request.form.get('introduction', '')),
             'timestamp': datetime.now()
         }
         
@@ -265,9 +265,9 @@ def forum_new():
         
         forum_data = {
             'id': forum_counter,
-            'author': request.form.get('author', '').strip(),
-            'title': request.form.get('title', '').strip(),
-            'content': request.form.get('content', '').strip(),
+            'author': sanitize_input(request.form.get('author', '')),
+            'title': sanitize_input(request.form.get('title', '')),
+            'content': sanitize_input(request.form.get('content', '')),
             'timestamp': datetime.now()
         }
         
