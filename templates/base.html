@@ -262,5 +262,95 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Emoji Reactions JavaScript -->
+    <script>
+    async function toggleReaction(postType, postId, emoji) {
+        const reactionSection = document.querySelector(`[data-post-type="${postType}"][data-post-id="${postId}"]`);
+        const button = reactionSection.querySelector(`[data-emoji="${emoji}"]`);
+        const countSpan = button.querySelector('.reaction-count');
+        
+        const isReacted = button.classList.contains('btn-success');
+        
+        try {
+            const url = isReacted ? 
+                `/unreact/${postType}/${postId}` : 
+                `/react/${postType}/${postId}`;
+            
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ emoji: emoji })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                updateReactionDisplay(reactionSection, data.reactions);
+            } else {
+                if (response.status === 401) {
+                    // User not logged in
+                    window.location.href = '/login';
+                } else {
+                    console.error('Reaction error:', data.message);
+                }
+            }
+        } catch (error) {
+            console.error('Network error:', error);
+        }
+    }
+    
+    function updateReactionDisplay(reactionSection, reactions) {
+        const buttons = reactionSection.querySelectorAll('.reaction-btn');
+        
+        buttons.forEach(button => {
+            const emoji = button.dataset.emoji;
+            const countSpan = button.querySelector('.reaction-count');
+            const reactionData = reactions[emoji];
+            
+            if (reactionData) {
+                countSpan.textContent = reactionData.count;
+                if (reactionData.user_reacted) {
+                    button.classList.remove('btn-outline-secondary');
+                    button.classList.add('btn-success');
+                } else {
+                    button.classList.remove('btn-success');
+                    button.classList.add('btn-outline-secondary');
+                }
+            } else {
+                countSpan.textContent = '0';
+                button.classList.remove('btn-success');
+                button.classList.add('btn-outline-secondary');
+            }
+        });
+    }
+    
+    // Load initial reaction data when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        const reactionSections = document.querySelectorAll('.reaction-section');
+        
+        reactionSections.forEach(async (section) => {
+            const postType = section.dataset.postType;
+            const postId = section.dataset.postId;
+            
+            try {
+                const response = await fetch(`/react/${postType}/${postId}`, {
+                    method: 'GET',
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        updateReactionDisplay(section, data.reactions);
+                    }
+                }
+            } catch (error) {
+                console.log('Could not load initial reactions');
+            }
+        });
+    });
+    </script>
 </body>
 </html>

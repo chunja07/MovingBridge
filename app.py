@@ -519,12 +519,13 @@ if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
 
 # Reaction routes
-@app.route('/react/<string:post_type>/<int:post_id>', methods=['POST'])
+@app.route('/react/<string:post_type>/<int:post_id>', methods=['GET', 'POST'])
 def add_reaction(post_type, post_id):
     if not is_logged_in():
-        return {'success': False, 'message': '로그인이 필요합니다.'}, 401
+        return jsonify({'success': False, 'message': '로그인이 필요합니다.'}), 401
     
-    emoji = request.json.get('emoji')
+    data = request.get_json()
+    emoji = data.get('emoji') if data else None
     user_id = session['user_id']
     
     if not emoji:
@@ -537,7 +538,7 @@ def add_reaction(post_type, post_id):
             # Check if job exists
             job = conn.execute('SELECT id FROM jobs WHERE id = ?', (post_id,)).fetchone()
             if not job:
-                return {'success': False, 'message': '존재하지 않는 게시글입니다.'}, 404
+                return jsonify({'success': False, 'message': '존재하지 않는 게시글입니다.'}), 404
             
             # Remove existing reaction from this user for this job and emoji
             conn.execute('DELETE FROM job_reactions WHERE job_id = ? AND user_id = ? AND emoji = ?', 
@@ -551,7 +552,7 @@ def add_reaction(post_type, post_id):
             # Check if intro exists
             intro = conn.execute('SELECT id FROM introductions WHERE id = ?', (post_id,)).fetchone()
             if not intro:
-                return {'success': False, 'message': '존재하지 않는 게시글입니다.'}, 404
+                return jsonify({'success': False, 'message': '존재하지 않는 게시글입니다.'}), 404
             
             # Remove existing reaction from this user for this intro and emoji
             conn.execute('DELETE FROM intro_reactions WHERE intro_id = ? AND user_id = ? AND emoji = ?', 
@@ -561,30 +562,31 @@ def add_reaction(post_type, post_id):
             conn.execute('INSERT INTO intro_reactions (intro_id, user_id, emoji) VALUES (?, ?, ?)', 
                         (post_id, user_id, emoji))
         else:
-            return {'success': False, 'message': '잘못된 게시글 유형입니다.'}, 400
+            return jsonify({'success': False, 'message': '잘못된 게시글 유형입니다.'}), 400
         
         conn.commit()
         
         # Get updated reaction counts
         reactions = get_post_reactions(post_type, post_id)
         
-        return {'success': True, 'reactions': reactions}
+        return jsonify({'success': True, 'reactions': reactions})
         
     except Exception as e:
-        return {'success': False, 'message': '반응 추가 중 오류가 발생했습니다.'}, 500
+        return jsonify({'success': False, 'message': '반응 추가 중 오류가 발생했습니다.'}), 500
     finally:
         conn.close()
 
 @app.route('/unreact/<string:post_type>/<int:post_id>', methods=['POST'])
 def remove_reaction(post_type, post_id):
     if not is_logged_in():
-        return {'success': False, 'message': '로그인이 필요합니다.'}, 401
+        return jsonify({'success': False, 'message': '로그인이 필요합니다.'}), 401
     
-    emoji = request.json.get('emoji')
+    data = request.get_json()
+    emoji = data.get('emoji') if data else None
     user_id = session['user_id']
     
     if not emoji:
-        return {'success': False, 'message': '이모지를 선택해주세요.'}, 400
+        return jsonify({'success': False, 'message': '이모지를 선택해주세요.'}), 400
     
     conn = get_db_connection()
     
@@ -596,17 +598,17 @@ def remove_reaction(post_type, post_id):
             conn.execute('DELETE FROM intro_reactions WHERE intro_id = ? AND user_id = ? AND emoji = ?', 
                         (post_id, user_id, emoji))
         else:
-            return {'success': False, 'message': '잘못된 게시글 유형입니다.'}, 400
+            return jsonify({'success': False, 'message': '잘못된 게시글 유형입니다.'}), 400
         
         conn.commit()
         
         # Get updated reaction counts
         reactions = get_post_reactions(post_type, post_id)
         
-        return {'success': True, 'reactions': reactions}
+        return jsonify({'success': True, 'reactions': reactions})
         
     except Exception as e:
-        return {'success': False, 'message': '반응 제거 중 오류가 발생했습니다.'}, 500
+        return jsonify({'success': False, 'message': '반응 제거 중 오류가 발생했습니다.'}), 500
     finally:
         conn.close()
 
