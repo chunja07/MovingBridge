@@ -1,6 +1,7 @@
 import os
 import logging
 import sqlite3
+import re
 from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -260,8 +261,23 @@ def register():
             flash('사용자명은 3글자 이상이어야 합니다.', 'error')
             return render_template('register.html')
         
-        if len(password) < 6:
-            flash('비밀번호는 6글자 이상이어야 합니다.', 'error')
+        if len(password) < 8:
+            flash('비밀번호는 8글자 이상이어야 합니다.', 'error')
+            return render_template('register.html')
+        
+        # Check for special character
+        if not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
+            flash('비밀번호에는 최소 1개의 특수문자(!@#$%^&*(),.?":{}|<>)가 포함되어야 합니다.', 'error')
+            return render_template('register.html')
+        
+        # Check for at least one number
+        if not re.search(r'\d', password):
+            flash('비밀번호에는 최소 1개의 숫자가 포함되어야 합니다.', 'error')
+            return render_template('register.html')
+        
+        # Check for at least one letter
+        if not re.search(r'[a-zA-Z]', password):
+            flash('비밀번호에는 최소 1개의 영문자가 포함되어야 합니다.', 'error')
             return render_template('register.html')
         
         if password != confirm_password:
