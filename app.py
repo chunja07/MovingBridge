@@ -3,18 +3,74 @@ import logging
 import sqlite3
 import re
 from datetime import datetime
+from dotenv import load_dotenv
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
+from flask_wtf.csrf import CSRFProtect
+from flask_talisman import Talisman
 from werkzeug.security import generate_password_hash, check_password_hash
+
+# Load environment variables
+load_dotenv()
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key")
+app.secret_key = os.environ.get("SESSION_SECRET")
 
-# Admin credentials (in production, use environment variables)
+# Initialize CSRF protection
+csrf = CSRFProtect(app)
+
+# Security headers with Flask-Talisman
+csp = {
+    'default-src': "'self'",
+    'script-src': [
+        "'self'",
+        "'unsafe-inline'",
+        "https://cdn.jsdelivr.net",
+        "https://cdn.replit.com"
+    ],
+    'style-src': [
+        "'self'",
+        "'unsafe-inline'",
+        "https://cdn.jsdelivr.net",
+        "https://cdn.replit.com"
+    ],
+    'img-src': [
+        "'self'",
+        "data:",
+        "https:"
+    ],
+    'font-src': [
+        "'self'",
+        "https://cdn.jsdelivr.net",
+        "https://cdn.replit.com"
+    ],
+    'frame-src': [
+        "https://www.youtube.com",
+        "https://youtube.com"
+    ]
+}
+
+talisman = Talisman(
+    app,
+    force_https=True,
+    strict_transport_security=True,
+    content_security_policy=csp,
+    session_cookie_secure=True,
+    session_cookie_http_only=True
+)
+
+# Configure secure session cookies
+app.config.update(
+    SESSION_COOKIE_SECURE=True,
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE='Lax'
+)
+
+# Admin credentials from environment variables
 ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "admin")
-ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "admin123")
+ADMIN_PASSWORD_HASH = generate_password_hash(os.environ.get("ADMIN_PASSWORD", "admin123"))
 
 # In-memory data storage
 job_posts = {}
@@ -376,12 +432,13 @@ def admin_login():
         username = request.form.get('username')
         password = request.form.get('password')
         
-        if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
-            session['admin_logged_in'] = True
-            flash('관리자로 로그인되었습니다.', 'success')
-            return redirect(url_for('admin_dashboard'))
-        else:
-            flash('잘못된 관리자 정보입니다.', 'error')
+        if username and password:
+            if username == ADMIN_USERNAME and check_password_hash(ADMIN_PASSWORD_HASH, password):
+                session['admin_logged_in'] = True
+                flash('관리자로 로그인되었습니다.', 'success')
+                return redirect(url_for('admin_dashboard'))
+        
+        flash('잘못된 관리자 정보입니다.', 'error')
     
     return render_template('admin_login.html')
 
