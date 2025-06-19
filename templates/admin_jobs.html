@@ -33,7 +33,7 @@
                                     <td>{{ job.id }}</td>
                                     <td>
                                         <strong>{{ job.title }}</strong><br>
-                                        <small class="text-muted">{{ job.description[:50] }}{% if job.description|length > 50 %}...{% endif %}</small>
+                                        <small class="text-secondary">{{ job.description[:50] }}{% if job.description|length > 50 %}...{% endif %}</small>
                                     </td>
                                     <td>{{ job.company }}</td>
                                     <td>{{ job.contact }}</td>
@@ -59,8 +59,8 @@
         <div class="card text-center">
             <div class="card-body py-5">
                 <div class="post-card-icon text-muted mb-3">📢</div>
-                <h5 class="mb-3">등록된 채용공고가 없습니다</h5>
-                <p class="text-muted mb-4">첫 번째 채용공고를 작성해 보세요!</p>
+                <h5 class="mb-3 text-dark">등록된 채용공고가 없습니다</h5>
+                <p class="text-secondary mb-4">첫 번째 채용공고를 작성해 보세요!</p>
                 <a href="{{ url_for('job_new') }}" class="btn btn-primary">
                     채용공고 작성하기
                 </a>
