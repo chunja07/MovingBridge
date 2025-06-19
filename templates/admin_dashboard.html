@@ -18,8 +18,8 @@
             <div class="card text-center">
                 <div class="card-body">
                     <div class="post-card-icon text-primary mb-2">📢</div>
-                    <h3 class="card-title">{{ stats.total_jobs }}</h3>
-                    <p class="card-text text-muted">채용공고</p>
+                    <h3 class="card-title text-dark">{{ stats.total_jobs }}</h3>
+                    <p class="card-text text-secondary">채용공고</p>
                     <a href="{{ url_for('admin_jobs') }}" class="btn btn-outline-primary btn-sm">관리</a>
                 </div>
             </div>
@@ -28,8 +28,8 @@
             <div class="card text-center">
                 <div class="card-body">
                     <div class="post-card-icon text-success mb-2">👤</div>
-                    <h3 class="card-title">{{ stats.total_intros }}</h3>
-                    <p class="card-text text-muted">자기소개</p>
+                    <h3 class="card-title text-dark">{{ stats.total_intros }}</h3>
+                    <p class="card-text text-secondary">자기소개</p>
                     <a href="{{ url_for('admin_intros') }}" class="btn btn-outline-success btn-sm">관리</a>
                 </div>
             </div>
@@ -38,8 +38,8 @@
             <div class="card text-center">
                 <div class="card-body">
                     <div class="post-card-icon text-info mb-2">📋</div>
-                    <h3 class="card-title">{{ stats.total_notices }}</h3>
-                    <p class="card-text text-muted">공지사항</p>
+                    <h3 class="card-title text-dark">{{ stats.total_notices }}</h3>
+                    <p class="card-text text-secondary">공지사항</p>
                     <a href="{{ url_for('admin_notices') }}" class="btn btn-outline-info btn-sm">관리</a>
                 </div>
             </div>
@@ -48,8 +48,8 @@
             <div class="card text-center">
                 <div class="card-body">
                     <div class="post-card-icon text-warning mb-2">💬</div>
-                    <h3 class="card-title">{{ stats.total_forums }}</h3>
-                    <p class="card-text text-muted">포럼 게시글</p>
+                    <h3 class="card-title text-dark">{{ stats.total_forums }}</h3>
+                    <p class="card-text text-secondary">포럼 게시글</p>
                     <a href="{{ url_for('admin_forums') }}" class="btn btn-outline-warning btn-sm">관리</a>
                 </div>
             </div>
@@ -96,13 +96,13 @@
                             <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
                                 <div>
                                     <strong>{{ job.title }}</strong><br>
-                                    <small class="text-muted">{{ job.company }} | {{ job.timestamp|datetime }}</small>
+                                    <small class="text-secondary">{{ job.company }} | {{ job.timestamp|datetime }}</small>
                                 </div>
                                 <a href="{{ url_for('job_view', job_id=job.id) }}" class="btn btn-outline-primary btn-sm">보기</a>
                             </div>
                         {% endfor %}
                     {% else %}
-                        <p class="text-muted">등록된 채용공고가 없습니다.</p>
+                        <p class="text-secondary">등록된 채용공고가 없습니다.</p>
                     {% endif %}
                 </div>
             </div>
@@ -119,13 +119,13 @@
                             <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
                                 <div>
                                     <strong>{{ intro.name }}님</strong><br>
-                                    <small class="text-muted">{{ intro.nationality }} | {{ intro.timestamp|datetime }}</small>
+                                    <small class="text-secondary">{{ intro.nationality }} | {{ intro.timestamp|datetime }}</small>
                                 </div>
                                 <a href="{{ url_for('intro_view', intro_id=intro.id) }}" class="btn btn-outline-success btn-sm">보기</a>
                             </div>
                         {% endfor %}
                     {% else %}
-                        <p class="text-muted">등록된 자기소개가 없습니다.</p>
+                        <p class="text-secondary">등록된 자기소개가 없습니다.</p>
                     {% endif %}
                 </div>
             </div>
