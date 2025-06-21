@@ -9,7 +9,7 @@
             <h1 class="section-title">
                 📋 공지사항
             </h1>
-            <p class="text-muted">중요한 공지사항을 확인하세요</p>
+            <p class="text-secondary">중요한 공지사항을 확인하세요</p>
         </div>
         {% if session.get('user_id') %}
             <a href="{{ url_for('notice_new') }}" class="btn btn-primary">
@@ -32,7 +32,7 @@
                                 <div class="post-card-icon text-warning me-3">📋</div>
                                 <div class="flex-grow-1">
                                     <h5 class="card-title mb-2 fw-bold">{{ notice.title }}</h5>
-                                    <p class="card-text text-muted mb-3">
+                                    <p class="card-text text-secondary mb-3">
                                         {{ notice.content[:150] }}{% if notice.content|length > 150 %}...{% endif %}
                                     </p>
                                     <div class="d-flex justify-content-between align-items-center">
@@ -51,9 +51,9 @@
     {% else %}
         <div class="card text-center">
             <div class="card-body py-5">
-                <div class="post-card-icon text-muted mb-3">📋</div>
-                <h5 class="mb-3">등록된 공지사항이 없습니다</h5>
-                <p class="text-muted mb-4">첫 번째 공지사항을 작성해 보세요!</p>
+                <div class="post-card-icon text-secondary mb-3">📋</div>
+                <h5 class="mb-3 text-dark">등록된 공지사항이 없습니다</h5>
+                <p class="text-secondary mb-4">첫 번째 공지사항을 작성해 보세요!</p>
                 <a href="{{ url_for('notice_new') }}" class="btn btn-warning">
                     공지사항 작성하기
                 </a>

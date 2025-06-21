@@ -9,7 +9,7 @@
             <h1 class="section-title">
                 💬 생활 포럼
             </h1>
-            <p class="text-muted">자유롭게 소통하고 정보를 나누세요</p>
+            <p class="text-secondary">자유롭게 소통하고 정보를 나누세요</p>
         </div>
         <a href="{{ url_for('forum_new') }}" class="btn btn-info">
             새 글 작성
@@ -26,8 +26,8 @@
                                 <div class="post-card-icon text-info me-3">💬</div>
                                 <div class="flex-grow-1">
                                     <h5 class="card-title mb-2 fw-bold">{{ forum.title }}</h5>
-                                    <h6 class="text-muted mb-2">작성자: {{ forum.author }}</h6>
-                                    <p class="card-text text-muted mb-3">
+                                    <h6 class="text-secondary mb-2">작성자: {{ forum.author }}</h6>
+                                    <p class="card-text text-secondary mb-3">
                                         {{ forum.content[:150] }}{% if forum.content|length > 150 %}...{% endif %}
                                     </p>
                                     <div class="d-flex justify-content-between align-items-center">
@@ -46,9 +46,9 @@
     {% else %}
         <div class="card text-center">
             <div class="card-body py-5">
-                <div class="post-card-icon text-muted mb-3">💬</div>
-                <h5 class="mb-3">등록된 게시글이 없습니다</h5>
-                <p class="text-muted mb-4">첫 번째 글을 작성해 보세요!</p>
+                <div class="post-card-icon text-secondary mb-3">💬</div>
+                <h5 class="mb-3 text-dark">등록된 게시글이 없습니다</h5>
+                <p class="text-secondary mb-4">첫 번째 글을 작성해 보세요!</p>
                 <a href="{{ url_for('forum_new') }}" class="btn btn-info">
                     글 작성하기
                 </a>
