@@ -26,7 +26,7 @@
                     <div class="card mb-2">
                         <div class="card-body">
                             <h5 class="card-title fw-bold">{{ notice.title }}</h5>
-                            <p class="card-text text-muted mb-3">
+                            <p class="card-text text-secondary mb-3">
                                 {{ notice.content[:100] }}{% if notice.content|length > 100 %}...{% endif %}
                             </p>
                             <div class="d-flex justify-content-between align-items-center">
@@ -37,7 +37,7 @@
                     </div>
                 {% endfor %}
             {% else %}
-                <p class="text-muted">등록된 공지사항이 없습니다.</p>
+                <p class="text-secondary">등록된 공지사항이 없습니다.</p>
             {% endif %}
         </div>
 
