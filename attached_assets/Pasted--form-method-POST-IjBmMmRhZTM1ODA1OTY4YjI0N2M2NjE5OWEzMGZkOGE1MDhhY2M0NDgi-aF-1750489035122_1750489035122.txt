@@ -1,0 +1,44 @@
+<form method="POST">
+                    IjBmMmRhZTM1ODA1OTY4YjI0N2M2NjE5OWEzMGZkOGE1MDhhY2M0NDgi.aFZXoA.qvXzj_nelmgqHJgAabxfR07c00Q
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="title" class="form-label fw-semibold">
+                                    채용 제목 <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" class="form-control" id="title" name="title" placeholder="예: 이사 도우미 구함" required="">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="company" class="form-label fw-semibold">
+                                    회사명 <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" class="form-control" id="company" name="company" placeholder="예: ABC 이사서비스" required="">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="contact" class="form-label fw-semibold">
+                                연락처 <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="contact" name="contact" placeholder="예: 010-1234-5678 또는 abc@email.com" required="">
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="description" class="form-label fw-semibold">
+                                채용 내용 <span class="text-danger">*</span>
+                            </label>
+                            <textarea class="form-control" id="description" name="description" rows="6" placeholder="근무 조건, 급여, 근무 시간, 요구 사항 등을 자세히 작성해주세요." required=""></textarea>
+                            <div class="form-text">구체적이고 친절한 설명을 작성해주세요.</div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="d-flex justify-content-between">
+                            <a href="/job" class="btn btn-outline-secondary">
+                                취소
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                채용공고 등록하기
+                            </button>
+                        </div>
+                    </div>
+                </form>
