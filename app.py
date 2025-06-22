@@ -505,23 +505,48 @@ def logout():
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
     if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
+        login_id = sanitize_input(request.form.get('username', ''))
+        password = request.form.get('password', '')
         
-        if username and password:
-            if username == ADMIN_USERNAME and check_password_hash(ADMIN_PASSWORD_HASH, password):
-                session['admin_logged_in'] = True
-                flash('관리자로 로그인되었습니다.', 'success')
-                return redirect(url_for('admin_dashboard'))
+        if not login_id or not password:
+            flash('아이디와 비밀번호를 모두 입력해주세요.', 'error')
+            return render_template('admin_login.html')
         
-        flash('잘못된 관리자 정보입니다.', 'error')
+        conn = get_db_connection()
+        if not conn:
+            flash('데이터베이스 연결 오류가 발생했습니다.', 'error')
+            return render_template('admin_login.html')
+        
+        try:
+            with conn.cursor() as cur:
+                # Find admin user by username or email
+                cur.execute('SELECT * FROM users WHERE (username = %s OR email = %s) AND role = %s', 
+                           (login_id, login_id, 'admin'))
+                user = cur.fetchone()
+        except Exception as e:
+            logging.error(f"Error during admin login: {e}")
+            flash('로그인 중 오류가 발생했습니다.', 'error')
+            return render_template('admin_login.html')
+        finally:
+            conn.close()
+        
+        if user and check_password_hash(user['password'], password):
+            session['admin_logged_in'] = True
+            session['admin_user_id'] = user['id']
+            session['admin_username'] = user['username']
+            flash('관리자로 로그인되었습니다.', 'success')
+            return redirect(url_for('admin_dashboard'))
+        else:
+            flash('잘못된 관리자 정보입니다.', 'error')
     
     return render_template('admin_login.html')
 
 @app.route('/admin/logout')
 def admin_logout():
     session.pop('admin_logged_in', None)
-    flash('로그아웃되었습니다.', 'success')
+    session.pop('admin_user_id', None)
+    session.pop('admin_username', None)
+    flash('관리자 로그아웃되었습니다.', 'success')
     return redirect(url_for('index'))
 
 @app.route('/admin')
