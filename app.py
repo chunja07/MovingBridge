@@ -747,14 +747,17 @@ def get_post_reactions(post_type, post_id):
     """Get reaction counts and user reactions for a post"""
     conn = get_db_connection()
     
-    if post_type == 'job':
-        table = 'job_reactions'
-        id_field = 'job_id'
-    elif post_type == 'intro':
-        table = 'intro_reactions'
-        id_field = 'intro_id'
-    else:
+    # Whitelist allowed table and field combinations to prevent SQL injection
+    ALLOWED_REACTIONS = {
+        'job': {'table': 'job_reactions', 'id_field': 'job_id'},
+        'intro': {'table': 'intro_reactions', 'id_field': 'intro_id'}
+    }
+    
+    if post_type not in ALLOWED_REACTIONS:
         return {}
+    
+    table = ALLOWED_REACTIONS[post_type]['table']
+    id_field = ALLOWED_REACTIONS[post_type]['id_field']
     
     # Get reaction counts grouped by emoji
     reaction_counts = conn.execute(f'''
