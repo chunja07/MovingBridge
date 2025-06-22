@@ -523,6 +523,7 @@ def admin_login():
                 cur.execute('SELECT * FROM users WHERE (username = %s OR email = %s) AND role = %s', 
                            (login_id, login_id, 'admin'))
                 user = cur.fetchone()
+                logging.info(f"Admin login attempt for: {login_id}, found user: {user is not None}")
         except Exception as e:
             logging.error(f"Error during admin login: {e}")
             flash('로그인 중 오류가 발생했습니다.', 'error')
@@ -537,6 +538,10 @@ def admin_login():
             flash('관리자로 로그인되었습니다.', 'success')
             return redirect(url_for('admin_dashboard'))
         else:
+            if user:
+                logging.info(f"Password check failed for admin user: {login_id}")
+            else:
+                logging.info(f"No admin user found with login_id: {login_id}")
             flash('잘못된 관리자 정보입니다.', 'error')
     
     return render_template('admin_login.html')
