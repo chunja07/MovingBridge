@@ -1,6 +1,7 @@
 import os
 import logging
-import sqlite3
+import psycopg2
+import psycopg2.extras
 import re
 from datetime import datetime
 from dotenv import load_dotenv
@@ -105,17 +106,27 @@ forum_counter = 0
 @app.route('/')
 def index():
     """Home page displaying both job postings and self-introductions"""
-    # Sort posts by timestamp (newest first)
-    sorted_jobs = sorted(job_posts.items(), key=lambda x: x[1]['timestamp'], reverse=True)
-    sorted_intros = sorted(intro_posts.items(), key=lambda x: x[1]['timestamp'], reverse=True)
-    sorted_notices = sorted(notice_posts.items(), key=lambda x: x[1]['timestamp'], reverse=True)
-    sorted_forums = sorted(forum_posts.items(), key=lambda x: x[1]['timestamp'], reverse=True)
-    
-    return render_template('index.html', 
-                         job_posts=sorted_jobs, 
-                         intro_posts=sorted_intros,
-                         notice_posts=sorted_notices,
-                         forum_posts=sorted_forums)
+    try:
+        # Sort posts by timestamp (newest first) - using in-memory storage for now
+        sorted_jobs = sorted(job_posts.items(), key=lambda x: x[1]['timestamp'], reverse=True)
+        sorted_intros = sorted(intro_posts.items(), key=lambda x: x[1]['timestamp'], reverse=True)
+        sorted_notices = sorted(notice_posts.items(), key=lambda x: x[1]['timestamp'], reverse=True)
+        sorted_forums = sorted(forum_posts.items(), key=lambda x: x[1]['timestamp'], reverse=True)
+        
+        return render_template('index.html', 
+                             job_posts=sorted_jobs, 
+                             intro_posts=sorted_intros,
+                             notice_posts=sorted_notices,
+                             forum_posts=sorted_forums)
+    except Exception as e:
+        logging.error(f"Error in index route: {e}")
+        # Return a simple response for health checks
+        return "Korean Job Community Platform - Health Check OK", 200
+
+@app.route('/health')
+def health_check():
+    """Simple health check endpoint for deployment"""
+    return "OK", 200
 
 @app.route('/job/new', methods=['GET', 'POST'])
 def job_new():
@@ -300,9 +311,19 @@ def get_current_user():
         return None
     
     conn = get_db_connection()
-    user = conn.execute('SELECT * FROM users WHERE id = ?', (session['user_id'],)).fetchone()
-    conn.close()
-    return user
+    if not conn:
+        return None
+    
+    try:
+        with conn.cursor() as cur:
+            cur.execute('SELECT * FROM users WHERE id = %s', (session['user_id'],))
+            user = cur.fetchone()
+        return user
+    except Exception as e:
+        logging.error(f"Error getting current user: {e}")
+        return None
+    finally:
+        conn.close()
 
 def require_login():
     if not is_logged_in():
@@ -741,6 +762,13 @@ def get_reactions_filter(post_type, post_id):
     return get_post_reactions(post_type, post_id)
 
 def get_db_connection():
-    conn = sqlite3.connect('movingbridge.db')
-    conn.row_factory = sqlite3.Row
-    return conn
+    try:
+        database_url = os.environ.get('DATABASE_URL')
+        if not database_url:
+            raise Exception("DATABASE_URL environment variable not set")
+        
+        conn = psycopg2.connect(database_url, cursor_factory=psycopg2.extras.RealDictCursor)
+        return conn
+    except Exception as e:
+        logging.error(f"Database connection failed: {e}")
+        return None
