@@ -503,10 +503,14 @@ def logout():
 
 # Admin routes
 @app.route('/admin/login', methods=['GET', 'POST'])
+@csrf.exempt  # Disable CSRF for admin login to avoid issues
 def admin_login():
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '')
+        
+        print(f"DEBUG: Admin login attempt - username: '{username}', password: '{password}'")
+        print(f"DEBUG: Form data: {dict(request.form)}")
         
         if not username or not password:
             flash('아이디와 비밀번호를 모두 입력해주세요.', 'error')
@@ -520,6 +524,7 @@ def admin_login():
             flash('관리자로 로그인되었습니다.', 'success')
             return redirect(url_for('admin_dashboard'))
         else:
+            print(f"DEBUG: Login failed - username: '{username}', password: '{password}'")
             flash('잘못된 관리자 정보입니다.', 'error')
     
     return render_template('admin_login.html')
