@@ -121,7 +121,43 @@ forum_counter = 0
 def index():
     """Home page displaying both job postings and self-introductions"""
     try:
-        # Sort posts by timestamp (newest first) - using in-memory storage for now
+        # Get data from database
+        conn = get_db_connection()
+        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        
+        # Get recent job posts
+        cur.execute("SELECT * FROM jobs ORDER BY created_at DESC LIMIT 5")
+        job_posts_db = cur.fetchall()
+        
+        # Get recent introductions
+        cur.execute("SELECT * FROM introductions ORDER BY created_at DESC LIMIT 5")
+        intro_posts_db = cur.fetchall()
+        
+        # Get recent notices
+        cur.execute("SELECT * FROM notices ORDER BY created_at DESC LIMIT 5")
+        notice_posts_db = cur.fetchall()
+        
+        # Get recent forum posts
+        cur.execute("SELECT * FROM forum_posts ORDER BY created_at DESC LIMIT 5")
+        forum_posts_db = cur.fetchall()
+        
+        cur.close()
+        conn.close()
+        
+        # Convert to format expected by template (id, data) tuples
+        sorted_jobs = [(post['id'], dict(post)) for post in job_posts_db]
+        sorted_intros = [(post['id'], dict(post)) for post in intro_posts_db]
+        sorted_notices = [(post['id'], dict(post)) for post in notice_posts_db]
+        sorted_forums = [(post['id'], dict(post)) for post in forum_posts_db]
+        
+        return render_template('index.html', 
+                             job_posts=sorted_jobs, 
+                             intro_posts=sorted_intros,
+                             notice_posts=sorted_notices,
+                             forum_posts=sorted_forums)
+    except Exception as e:
+        logging.error(f"Error in index route: {e}")
+        # Fallback to in-memory storage if database fails
         sorted_jobs = sorted(job_posts.items(), key=lambda x: x[1]['timestamp'], reverse=True)
         sorted_intros = sorted(intro_posts.items(), key=lambda x: x[1]['timestamp'], reverse=True)
         sorted_notices = sorted(notice_posts.items(), key=lambda x: x[1]['timestamp'], reverse=True)
@@ -132,10 +168,6 @@ def index():
                              intro_posts=sorted_intros,
                              notice_posts=sorted_notices,
                              forum_posts=sorted_forums)
-    except Exception as e:
-        logging.error(f"Error in index route: {e}")
-        # Return a simple response for health checks
-        return "Korean Job Community Platform - Health Check OK", 200
 
 @app.route('/health')
 def health_check():
