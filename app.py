@@ -20,6 +20,11 @@ logging.basicConfig(level=logging.DEBUG)
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET")
 
+# Configure session for production deployment
+app.config['SESSION_COOKIE_SECURE'] = False  # Allow HTTP in development
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+
 # Enable auto-escaping for all templates for XSS protection
 app.jinja_env.autoescape = True
 
@@ -558,17 +563,44 @@ def admin_login():
             flash('아이디와 비밀번호를 모두 입력해주세요.', 'error')
             return render_template('admin_login.html')
         
-        # Direct check for admin user
+        # Test both direct check and database check
+        admin_success = False
+        
+        # Direct hardcoded check
         if username == 'admin' and password == 'admin':
+            admin_success = True
+            print(f"DEBUG: Direct admin check passed")
+        
+        # Database check as backup
+        if not admin_success:
+            conn = get_db_connection()
+            if conn:
+                try:
+                    with conn.cursor() as cur:
+                        cur.execute('SELECT * FROM users WHERE username = %s AND role = %s', 
+                                   (username, 'admin'))
+                        user = cur.fetchone()
+                        if user and check_password_hash(user['password'], password):
+                            admin_success = True
+                            print(f"DEBUG: Database admin check passed")
+                except Exception as e:
+                    print(f"DEBUG: Database check failed: {e}")
+                finally:
+                    conn.close()
+        
+        if admin_success:
+            # Clear any existing session data
+            session.clear()
+            # Set session with explicit values
             session.permanent = True
             session['admin_logged_in'] = True
             session['admin_user_id'] = 1
             session['admin_username'] = 'admin'
-            print(f"DEBUG: Admin login successful, session set")
+            print(f"DEBUG: Admin login successful, session keys: {list(session.keys())}")
             flash('관리자로 로그인되었습니다.', 'success')
             return redirect(url_for('admin_dashboard'))
         else:
-            print(f"DEBUG: Login failed - username: '{username}', password: '{password}'")
+            print(f"DEBUG: All admin checks failed - username: '{username}', password: '{password}'")
             flash('잘못된 관리자 정보입니다.', 'error')
     
     return render_template('admin_login.html')
