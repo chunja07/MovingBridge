@@ -219,8 +219,24 @@ def intro_view(intro_id):
 @app.route('/notice')
 def notice_list():
     """Page displaying all notices"""
-    sorted_notices = sorted(notice_posts.items(), key=lambda x: x[1]['timestamp'], reverse=True)
-    return render_template('notice_list.html', notice_posts=sorted_notices)
+    conn = get_db_connection()
+    if not conn:
+        flash('데이터베이스 연결 오류가 발생했습니다.', 'error')
+        return render_template('notice_list.html', notice_posts=[])
+    
+    try:
+        with conn.cursor() as cur:
+            cur.execute('SELECT * FROM notices ORDER BY created_at DESC')
+            notices = cur.fetchall()
+            # Convert to tuple format for template compatibility
+            notice_posts = [(notice['id'], notice) for notice in notices]
+            return render_template('notice_list.html', notice_posts=notice_posts)
+    except Exception as e:
+        logging.error(f"Error fetching notices: {e}")
+        flash('공지사항을 불러오는 중 오류가 발생했습니다.', 'error')
+        return render_template('notice_list.html', notice_posts=[])
+    finally:
+        conn.close()
 
 @app.route('/notice/new', methods=['GET', 'POST'])
 def notice_new():
@@ -235,35 +251,61 @@ def notice_new():
         return redirect(url_for('notice_list'))
     
     if request.method == 'POST':
-        global notice_counter
-        notice_counter += 1
+        title = sanitize_input(request.form.get('title', ''))
+        content = sanitize_input(request.form.get('content', ''))
         
-        notice_data = {
-            'id': notice_counter,
-            'title': sanitize_input(request.form.get('title', '')),
-            'content': sanitize_input(request.form.get('content', '')),
-            'timestamp': datetime.now()
-        }
-        
-        if not all([notice_data['title'], notice_data['content']]):
+        if not all([title, content]):
             flash('모든 필드를 입력해주세요.', 'error')
             return render_template('notice_new.html')
         
-        notice_posts[notice_counter] = notice_data
-        flash('공지사항이 성공적으로 등록되었습니다.', 'success')
-        return redirect(url_for('notice_view', notice_id=notice_counter))
+        conn = get_db_connection()
+        if not conn:
+            flash('데이터베이스 연결 오류가 발생했습니다.', 'error')
+            return render_template('notice_new.html')
+        
+        try:
+            with conn.cursor() as cur:
+                cur.execute('INSERT INTO notices (title, content) VALUES (%s, %s) RETURNING id', 
+                           (title, content))
+                notice_id = cur.fetchone()['id']
+                conn.commit()
+                
+                flash('공지사항이 성공적으로 등록되었습니다.', 'success')
+                return redirect(url_for('notice_view', notice_id=notice_id))
+                
+        except Exception as e:
+            logging.error(f"Error creating notice: {e}")
+            flash('공지사항 등록 중 오류가 발생했습니다.', 'error')
+            return render_template('notice_new.html')
+        finally:
+            conn.close()
     
     return render_template('notice_new.html')
 
 @app.route('/notice/<int:notice_id>')
 def notice_view(notice_id):
     """Page to view a specific notice"""
-    if notice_id not in notice_posts:
-        flash('존재하지 않는 공지사항입니다.', 'error')
+    conn = get_db_connection()
+    if not conn:
+        flash('데이터베이스 연결 오류가 발생했습니다.', 'error')
         return redirect(url_for('notice_list'))
     
-    notice = notice_posts[notice_id]
-    return render_template('notice_view.html', notice=notice)
+    try:
+        with conn.cursor() as cur:
+            cur.execute('SELECT * FROM notices WHERE id = %s', (notice_id,))
+            notice = cur.fetchone()
+            
+            if not notice:
+                flash('존재하지 않는 공지사항입니다.', 'error')
+                return redirect(url_for('notice_list'))
+                
+            return render_template('notice_view.html', notice=notice)
+    except Exception as e:
+        logging.error(f"Error fetching notice {notice_id}: {e}")
+        flash('공지사항을 불러오는 중 오류가 발생했습니다.', 'error')
+        return redirect(url_for('notice_list'))
+    finally:
+        conn.close()
 
 # Forum routes
 @app.route('/forum')
