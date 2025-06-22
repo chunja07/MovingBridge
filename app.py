@@ -224,11 +224,15 @@ def notice_list():
 
 @app.route('/notice/new', methods=['GET', 'POST'])
 def notice_new():
-    """Page to create new notices - requires login"""
-    # Temporarily disable login requirement for deployment
-    # auth_check = require_login()
-    # if auth_check:
-    #     return auth_check
+    """Page to create new notices - requires admin login"""
+    # Check if user is logged in and is admin
+    if not session.get('user_id'):
+        flash('로그인이 필요합니다.', 'error')
+        return redirect(url_for('login'))
+    
+    if session.get('role') != 'admin':
+        flash('공지사항 작성 권한이 없습니다. 관리자만 작성 가능합니다.', 'error')
+        return redirect(url_for('notice_list'))
     
     if request.method == 'POST':
         global notice_counter
@@ -468,6 +472,7 @@ def login():
             session['user_id'] = user['id']
             session['username'] = user['username']
             session['email'] = user['email']
+            session['role'] = user.get('role', 'user')  # Default to 'user' if role is not set
             flash(f'{user["username"]}님 환영합니다!', 'success')
             
             # Redirect to intended page or home
@@ -490,6 +495,8 @@ def logout():
     username = session.get('username', '')
     session.pop('user_id', None)
     session.pop('username', None)
+    session.pop('email', None)
+    session.pop('role', None)
     if username:
         flash(f'{username}님 로그아웃되었습니다.', 'success')
     return redirect(url_for('index'))

@@ -11,13 +11,9 @@
             </h1>
             <p class="text-secondary">중요한 공지사항을 확인하세요</p>
         </div>
-        {% if session.get('user_id') %}
+        {% if session.get('role') == 'admin' %}
             <a href="{{ url_for('notice_new') }}" class="btn btn-primary">
                 새 공지사항 작성
-            </a>
-        {% else %}
-            <a href="{{ url_for('login') }}" class="btn btn-outline-primary">
-                로그인 후 공지사항 작성
             </a>
         {% endif %}
     </div>
@@ -54,9 +50,11 @@
                 <div class="post-card-icon text-secondary mb-3">📋</div>
                 <h5 class="mb-3 text-dark">등록된 공지사항이 없습니다</h5>
                 <p class="text-secondary mb-4">첫 번째 공지사항을 작성해 보세요!</p>
-                <a href="{{ url_for('notice_new') }}" class="btn btn-warning">
-                    공지사항 작성하기
-                </a>
+                {% if session.get('role') == 'admin' %}
+                    <a href="{{ url_for('notice_new') }}" class="btn btn-warning">
+                        공지사항 작성하기
+                    </a>
+                {% endif %}
             </div>
         </div>
     {% endif %}
