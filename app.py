@@ -472,7 +472,14 @@ def login():
             
             # Redirect to intended page or home
             next_page = request.args.get('next')
-            return redirect(next_page) if next_page else redirect(url_for('index'))
+            if next_page:
+                # Validate redirect URL to prevent open redirect attacks
+                from urllib.parse import urlparse
+                parsed_url = urlparse(next_page)
+                # Only allow relative URLs (no netloc) or URLs from the same domain
+                if not parsed_url.netloc or parsed_url.netloc == request.host:
+                    return redirect(next_page)
+            return redirect(url_for('index'))
         else:
             flash('아이디 또는 비밀번호가 올바르지 않습니다.', 'error')
     
