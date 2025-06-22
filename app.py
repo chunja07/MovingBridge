@@ -518,9 +518,11 @@ def admin_login():
         
         # Direct check for admin user
         if username == 'admin' and password == 'admin':
+            session.permanent = True
             session['admin_logged_in'] = True
             session['admin_user_id'] = 1
             session['admin_username'] = 'admin'
+            print(f"DEBUG: Admin login successful, session set")
             flash('관리자로 로그인되었습니다.', 'success')
             return redirect(url_for('admin_dashboard'))
         else:
@@ -539,8 +541,10 @@ def admin_logout():
 
 @app.route('/admin')
 def admin_dashboard():
+    print(f"DEBUG: Admin dashboard access attempt, session: {dict(session)}")
     auth_check = require_admin()
     if auth_check:
+        print(f"DEBUG: Admin auth check failed, redirecting")
         return auth_check
     
     # Statistics
