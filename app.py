@@ -388,7 +388,9 @@ def is_admin():
     return session.get('admin_logged_in', False)
 
 def require_admin():
-    if not is_admin():
+    admin_status = is_admin()
+    print(f"DEBUG: require_admin check - is_admin(): {admin_status}, session: {dict(session)}")
+    if not admin_status:
         flash('관리자 권한이 필요합니다.', 'error')
         return redirect(url_for('admin_login'))
     return None
@@ -580,11 +582,10 @@ def admin_logout():
 
 @app.route('/admin')
 def admin_dashboard():
-    print(f"DEBUG: Admin dashboard access attempt, session: {dict(session)}")
-    auth_check = require_admin()
-    if auth_check:
-        print(f"DEBUG: Admin auth check failed, redirecting")
-        return auth_check
+    # Skip auth check for now to test directly
+    if not session.get('admin_logged_in'):
+        flash('관리자 권한이 필요합니다.', 'error')
+        return redirect(url_for('admin_login'))
     
     # Statistics
     stats = {
