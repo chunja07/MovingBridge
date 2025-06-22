@@ -7,6 +7,9 @@ from datetime import datetime
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from flask_wtf.csrf import CSRFProtect
+from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField, SubmitField
+from wtforms.validators import DataRequired
 from flask_talisman import Talisman
 from werkzeug.security import generate_password_hash, check_password_hash
 from markupsafe import Markup
@@ -46,6 +49,12 @@ def is_valid_email(email):
 
 # Initialize CSRF protection
 csrf = CSRFProtect(app)
+
+# Admin Login Form
+class AdminLoginForm(FlaskForm):
+    username = StringField('관리자 아이디', validators=[DataRequired()])
+    password = PasswordField('비밀번호', validators=[DataRequired()])
+    submit = SubmitField('로그인')
 
 # Security headers with Flask-Talisman
 csp = {
@@ -553,9 +562,11 @@ def logout():
 # Admin routes
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
-    if request.method == 'POST':
-        username = request.form.get('username', '').strip()
-        password = request.form.get('password', '')
+    form = AdminLoginForm()
+    
+    if form.validate_on_submit():
+        username = form.username.data.strip()
+        password = form.password.data
         
         # Simple hardcoded admin check for reliability
         if username == 'admin' and password == 'admin':
@@ -569,7 +580,7 @@ def admin_login():
         else:
             flash('잘못된 관리자 정보입니다.', 'error')
     
-    return render_template('admin_login.html')
+    return render_template('admin_login.html', form=form)
 
 @app.route('/admin/logout')
 def admin_logout():
