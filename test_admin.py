@@ -15,13 +15,31 @@ def test_admin_login():
     login_page = session.get(f"{base_url}/admin/login")
     print(f"Login page status: {login_page.status_code}")
     
+    # Extract CSRF token from the page
+    csrf_token = None
+    if 'csrf_token' in login_page.text:
+        import re
+        token_match = re.search(r'name="csrf_token" value="([^"]+)"', login_page.text)
+        if token_match:
+            csrf_token = token_match.group(1)
+            print(f"Found CSRF token: {csrf_token[:20]}...")
+    
     # Attempt login
     login_data = {
         'username': 'admin',
         'password': 'admin'
     }
     
-    response = session.post(f"{base_url}/admin/login", data=login_data, allow_redirects=False)
+    if csrf_token:
+        login_data['csrf_token'] = csrf_token
+    
+    # Add proper headers for CSRF protection
+    headers = {
+        'Referer': f"{base_url}/admin/login",
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
+    
+    response = session.post(f"{base_url}/admin/login", data=login_data, headers=headers, allow_redirects=False)
     print(f"Login response status: {response.status_code}")
     print(f"Login response headers: {response.headers}")
     

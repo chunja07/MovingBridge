@@ -551,7 +551,6 @@ def logout():
     return redirect(url_for('index'))
 
 # Admin routes
-@csrf.exempt
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
     if request.method == 'POST':
