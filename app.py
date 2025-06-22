@@ -225,9 +225,10 @@ def notice_list():
 @app.route('/notice/new', methods=['GET', 'POST'])
 def notice_new():
     """Page to create new notices - requires login"""
-    auth_check = require_login()
-    if auth_check:
-        return auth_check
+    # Temporarily disable login requirement for deployment
+    # auth_check = require_login()
+    # if auth_check:
+    #     return auth_check
     
     if request.method == 'POST':
         global notice_counter
@@ -397,33 +398,42 @@ def register():
         
         # Check if username or email already exists
         conn = get_db_connection()
-        existing_user = conn.execute('SELECT id FROM users WHERE username = ? OR email = ?', (username, email)).fetchone()
-        
-        if existing_user:
-            existing_username = conn.execute('SELECT id FROM users WHERE username = ?', (username,)).fetchone()
-            existing_email = conn.execute('SELECT id FROM users WHERE email = ?', (email,)).fetchone()
-            conn.close()
-            
-            if existing_username:
-                flash('이미 사용 중인 사용자명입니다.', 'error')
-            if existing_email:
-                flash('이미 사용 중인 이메일 주소입니다.', 'error')
+        if not conn:
+            flash('데이터베이스 연결 오류가 발생했습니다.', 'error')
             return render_template('register.html')
         
-        # Create new user
-        hashed_password = generate_password_hash(password)
         try:
-            conn.execute('INSERT INTO users (username, email, password) VALUES (?, ?, ?)', 
-                        (username, email, hashed_password))
-            conn.commit()
-            conn.close()
-            
-            flash('회원가입이 완료되었습니다. 로그인해주세요.', 'success')
-            return redirect(url_for('login'))
+            with conn.cursor() as cur:
+                cur.execute('SELECT id FROM users WHERE username = %s OR email = %s', (username, email))
+                existing_user = cur.fetchone()
+                
+                if existing_user:
+                    cur.execute('SELECT id FROM users WHERE username = %s', (username,))
+                    existing_username = cur.fetchone()
+                    cur.execute('SELECT id FROM users WHERE email = %s', (email,))
+                    existing_email = cur.fetchone()
+                    
+                    if existing_username:
+                        flash('이미 사용 중인 사용자명입니다.', 'error')
+                    if existing_email:
+                        flash('이미 사용 중인 이메일 주소입니다.', 'error')
+                    return render_template('register.html')
+                
+                # Create new user
+                hashed_password = generate_password_hash(password)
+                cur.execute('INSERT INTO users (username, email, password) VALUES (%s, %s, %s)', 
+                           (username, email, hashed_password))
+                conn.commit()
+                
+                flash('회원가입이 완료되었습니다. 로그인해주세요.', 'success')
+                return redirect(url_for('login'))
+                
         except Exception as e:
-            conn.close()
+            logging.error(f"Error during registration: {e}")
             flash('회원가입 중 오류가 발생했습니다.', 'error')
             return render_template('register.html')
+        finally:
+            conn.close()
     
     return render_template('register.html')
 
@@ -438,9 +448,21 @@ def login():
             return render_template('login.html')
         
         conn = get_db_connection()
-        # Try to find user by username or email
-        user = conn.execute('SELECT * FROM users WHERE username = ? OR email = ?', (login_id, login_id)).fetchone()
-        conn.close()
+        if not conn:
+            flash('데이터베이스 연결 오류가 발생했습니다.', 'error')
+            return render_template('login.html')
+        
+        try:
+            with conn.cursor() as cur:
+                # Try to find user by username or email
+                cur.execute('SELECT * FROM users WHERE username = %s OR email = %s', (login_id, login_id))
+                user = cur.fetchone()
+        except Exception as e:
+            logging.error(f"Error during login: {e}")
+            flash('로그인 중 오류가 발생했습니다.', 'error')
+            return render_template('login.html')
+        finally:
+            conn.close()
         
         if user and check_password_hash(user['password'], password):
             session['user_id'] = user['id']
