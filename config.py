@@ -27,8 +27,8 @@ class DevelopmentConfig(Config):
     DEBUG = True
     FLASK_ENV = 'development'
     
-    # Use PostgreSQL for Replit development (falls back to SQLite if not available)
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///movingbridge_dev.db'
+    # Use SQLite for development
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///movingbridge_dev.db'
     
     # Disable HTTPS enforcement for development
     WTF_CSRF_SSL_STRICT = False
@@ -97,9 +97,9 @@ config = {
 
 def get_config():
     """Get configuration based on environment"""
-    # For Replit development, always use development config unless explicitly set
+    # Check if explicitly set to production
     env = os.environ.get('FLASK_ENV', 'development')
-    if env == 'production' and os.environ.get('DATABASE_URL', '').startswith('postgresql'):
+    if env == 'production':
         return config['production']
     else:
         return config['development']
