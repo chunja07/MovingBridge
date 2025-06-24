@@ -234,19 +234,6 @@
                         </a>
                     </li>
                     {% endif %}
-                    {% if session.get('admin_logged_in') %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin_dashboard') }}">
-                            🔧 관리자
-                        </a>
-                    </li>
-                    {% else %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin_login') }}">
-                            🔐 관리자 로그인
-                        </a>
-                    </li>
-                    {% endif %}
                 </ul>
             </div>
         </div>
@@ -273,8 +260,26 @@
 
     <!-- Footer -->
     <footer class="bg-dark text-light py-4 mt-5">
-        <div class="container text-center">
-            <p class="mb-0">&copy; 2025 이사업체 구인 커뮤니티. 외국인 근로자와 이사업체를 연결하는 플랫폼.</p>
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <p class="mb-0">&copy; 2025 이사업체 구인 커뮤니티. 외국인 근로자와 이사업체를 연결하는 플랫폼.</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    {% if session.get('admin_logged_in') %}
+                        <a href="{{ url_for('admin_dashboard') }}" class="text-white-50 text-decoration-none small me-3">
+                            <i class="fas fa-user-shield me-1"></i>관리자 대시보드
+                        </a>
+                        <a href="{{ url_for('admin_logout') }}" class="text-white-50 text-decoration-none small">
+                            로그아웃
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('admin_login') }}" class="text-white-50 text-decoration-none small">
+                            <i class="fas fa-user-shield me-1"></i>관리자 로그인
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
         </div>
     </footer>
 
