@@ -58,10 +58,54 @@ class AdminLoginForm(FlaskForm):
 
 class Step1RegisterForm(FlaskForm):
     name = StringField('이름', validators=[DataRequired(), Length(min=1, max=50)])
-    nationality = StringField('국적', validators=[DataRequired(), Length(min=1, max=50)])
+    nationality = SelectField('국적', choices=[
+        ('', '선택해주세요'),
+        ('vietnam', '베트남'),
+        ('philippines', '필리핀'),
+        ('thailand', '태국'),
+        ('cambodia', '캄보디아'),
+        ('myanmar', '미얀마'),
+        ('laos', '라오스'),
+        ('indonesia', '인도네시아'),
+        ('china', '중국'),
+        ('mongolia', '몽골'),
+        ('uzbekistan', '우즈베키스탄'),
+        ('kyrgyzstan', '키르기스스탄'),
+        ('kazakhstan', '카자흐스탄'),
+        ('nepal', '네팔'),
+        ('sri_lanka', '스리랑카'),
+        ('pakistan', '파키스탄'),
+        ('bangladesh', '방글라데시'),
+        ('india', '인도'),
+        ('other', '기타')
+    ], validators=[DataRequired()])
     gender = SelectField('성별', choices=[('', '선택해주세요'), ('male', '남성'), ('female', '여성')], validators=[DataRequired()])
     korean_fluent = SelectField('한국어 가능 여부', choices=[('', '선택해주세요'), ('yes', '예'), ('no', '아니오')], validators=[DataRequired()])
-    languages = StringField('구사 언어', validators=[DataRequired(), Length(min=1, max=200)])
+    languages = SelectMultipleField('구사 언어 (복수선택 가능)', choices=[
+        ('korean', '한국어'),
+        ('english', '영어'),
+        ('chinese', '중국어'),
+        ('vietnamese', '베트남어'),
+        ('thai', '태국어'),
+        ('filipino', '필리핀어'),
+        ('khmer', '크메르어(캄보디아)'),
+        ('myanmar', '미얀마어'),
+        ('lao', '라오어'),
+        ('indonesian', '인도네시아어'),
+        ('mongolian', '몽골어'),
+        ('uzbek', '우즈벡어'),
+        ('kyrgyz', '키르기스어'),
+        ('kazakh', '카자흐어'),
+        ('nepali', '네팔어'),
+        ('sinhala', '싱할라어'),
+        ('urdu', '우르두어'),
+        ('bengali', '벵골어'),
+        ('hindi', '힌디어'),
+        ('japanese', '일본어'),
+        ('russian', '러시아어'),
+        ('arabic', '아랍어'),
+        ('other', '기타')
+    ], widget=widgets.ListWidget(prefix_label=False), option_widget=widgets.CheckboxInput(), validators=[DataRequired()])
     preferred_jobs = SelectField('희망 직무', choices=[
         ('', '선택해주세요'),
         ('moving', '이사 작업'),
@@ -636,7 +680,7 @@ def register():
                     form.nationality.data,
                     form.gender.data,
                     form.korean_fluent.data == 'yes',
-                    form.languages.data,
+                    ','.join(form.languages.data) if form.languages.data else '',
                     form.preferred_jobs.data,
                     form.preferred_location.data,
                     form.availability.data,
