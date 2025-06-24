@@ -99,6 +99,8 @@ Recent Changes:
 - June 24, 2025: Implemented 2-step registration system for foreign workers
 - June 24, 2025: Added separate registration flows for companies and workers
 - June 24, 2025: Created company registration with business verification fields
+- June 24, 2025: Enhanced nationality dropdown with 41 countries (Asia, North America, Europe, South America)
+- June 24, 2025: Improved language selection with English labels and 36 language options
 
 ## User Preferences
 
