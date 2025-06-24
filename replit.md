@@ -93,8 +93,12 @@ The application follows a traditional MVC architecture with Flask serving as the
 
 ## Changelog
 
-Changelog:
-- June 24, 2025. Initial setup
+Recent Changes:
+- June 24, 2025: Initial setup with PostgreSQL database
+- June 24, 2025: Converted all boards from card format to table format
+- June 24, 2025: Implemented 2-step registration system for foreign workers
+- June 24, 2025: Added separate registration flows for companies and workers
+- June 24, 2025: Created company registration with business verification fields
 
 ## User Preferences
 

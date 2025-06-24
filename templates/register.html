@@ -113,6 +113,14 @@
                             {{ form.submit(class="btn btn-success btn-lg") }}
                         </div>
                     </form>
+                    
+                    <div class="text-center mt-3">
+                        <p class="text-muted">
+                            업체로 가입하시겠습니까? 
+                            <a href="{{ url_for('register_company') }}" class="text-decoration-none">업체 가입</a> | 
+                            <a href="{{ url_for('register_choice') }}" class="text-decoration-none">가입 유형 선택</a>
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>

@@ -154,6 +154,18 @@ class Step2RegisterForm(FlaskForm):
     ])
     submit = SubmitField('정보 업데이트')
 
+class CompanyRegisterForm(FlaskForm):
+    company_name = StringField('회사명', validators=[DataRequired(), Length(min=2, max=100)])
+    business_number = StringField('사업자등록번호', validators=[DataRequired(), Length(min=10, max=20)])
+    ceo_name = StringField('대표자명', validators=[DataRequired(), Length(min=2, max=50)])
+    contact_number = StringField('연락처', validators=[DataRequired(), Length(min=10, max=20)])
+    email = StringField('이메일', validators=[DataRequired(), Length(min=5, max=120)])
+    password = PasswordField('비밀번호', validators=[DataRequired(), Length(min=8, max=128)])
+    confirm_password = PasswordField('비밀번호 확인', validators=[DataRequired()])
+    address = StringField('회사 주소', validators=[DataRequired(), Length(min=5, max=200)])
+    company_description = TextAreaField('회사 소개', validators=[Optional(), Length(max=500)])
+    submit = SubmitField('회원가입')
+
 # Security headers with Flask-Talisman
 csp = {
     'default-src': "'self'",
@@ -534,8 +546,72 @@ def require_admin():
         return redirect(url_for('admin_login'))
     return None
 
-# Step 1 Registration route 
-@app.route('/register', methods=['GET', 'POST'])
+# Registration choice route
+@app.route('/register')
+def register_choice():
+    return render_template('register_choice.html')
+
+# Company registration route
+@app.route('/register/company', methods=['GET', 'POST'])
+def register_company():
+    form = CompanyRegisterForm()
+    
+    if form.validate_on_submit():
+        # Password confirmation check
+        if form.password.data != form.confirm_password.data:
+            flash('비밀번호가 일치하지 않습니다.', 'error')
+            return render_template('register_company.html', form=form)
+        
+        conn = get_db_connection()
+        if not conn:
+            flash('데이터베이스 연결 오류가 발생했습니다.', 'error')
+            return render_template('register_company.html', form=form)
+        
+        try:
+            with conn.cursor() as cur:
+                # Check if company already exists
+                cur.execute('SELECT id FROM companies WHERE email = %s OR business_number = %s', 
+                           (form.email.data, form.business_number.data))
+                existing_company = cur.fetchone()
+                
+                if existing_company:
+                    flash('이미 등록된 이메일 또는 사업자등록번호입니다.', 'error')
+                    return render_template('register_company.html', form=form)
+                
+                # Hash password and create company
+                password_hash = generate_password_hash(form.password.data)
+                cur.execute('''
+                    INSERT INTO companies (
+                        company_name, business_number, ceo_name, contact_number,
+                        email, password_hash, address, company_description, created_at
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, NOW())
+                ''', (
+                    form.company_name.data,
+                    form.business_number.data,
+                    form.ceo_name.data,
+                    form.contact_number.data,
+                    form.email.data,
+                    password_hash,
+                    form.address.data,
+                    form.company_description.data
+                ))
+                conn.commit()
+                
+                flash('업체 회원가입이 완료되었습니다! 로그인해주세요.', 'success')
+                return redirect(url_for('login'))
+                
+        except Exception as e:
+            logging.error(f"Error creating company: {e}")
+            flash('회원가입 중 오류가 발생했습니다.', 'error')
+            return render_template('register_company.html', form=form)
+        finally:
+            conn.close()
+    
+    return render_template('register_company.html', form=form)
+
+# Worker Registration route (Step 1) - Keep original /register for workers
+@app.route('/register/worker', methods=['GET', 'POST'])
+@app.route('/register-worker', methods=['GET', 'POST'])
 def register():
     form = Step1RegisterForm()
     

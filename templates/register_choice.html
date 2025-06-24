@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}회원가입 선택 - 무빙브릿지{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="text-center mb-5">
+                <h1 class="display-5 fw-bold text-primary mb-3">무빙브릿지 회원가입</h1>
+                <p class="lead text-secondary">어떤 유형으로 가입하시겠습니까?</p>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="card h-100 shadow-sm border-primary">
+                        <div class="card-body text-center p-5">
+                            <div class="mb-4">
+                                <i class="fas fa-truck text-primary" style="font-size: 4rem;"></i>
+                            </div>
+                            <h3 class="card-title text-primary mb-3">이사업체 회원가입</h3>
+                            <p class="card-text text-secondary mb-4">
+                                외국인 근로자를 고용하고 싶은<br>
+                                이사업체를 위한 가입
+                            </p>
+                            <ul class="list-unstyled text-start mb-4">
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>채용공고 등록</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>구직자 프로필 열람</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>직접 연락 및 채용</li>
+                            </ul>
+                            <a href="{{ url_for('register_company') }}" class="btn btn-primary btn-lg w-100">
+                                업체 회원가입
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card h-100 shadow-sm border-success">
+                        <div class="card-body text-center p-5">
+                            <div class="mb-4">
+                                <i class="fas fa-user-friends text-success" style="font-size: 4rem;"></i>
+                            </div>
+                            <h3 class="card-title text-success mb-3">구직자 회원가입</h3>
+                            <p class="card-text text-secondary mb-4">
+                                이사업체에서 일하고 싶은<br>
+                                외국인 근로자를 위한 가입
+                            </p>
+                            <ul class="list-unstyled text-start mb-4">
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>자기소개 등록</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>채용공고 확인</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>직접 지원 및 연락</li>
+                            </ul>
+                            <a href="{{ url_for('register') }}" class="btn btn-success btn-lg w-100">
+                                구직자 회원가입
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-4">
+                <p class="text-muted">
+                    이미 계정이 있으신가요? 
+                    <a href="{{ url_for('login') }}" class="text-decoration-none">로그인하기</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
