@@ -13,10 +13,14 @@ def check_environment_variables():
     """Check if all required environment variables are set"""
     load_dotenv()
     
-    required_vars = [
-        'DATABASE_URL',
-        'SESSION_SECRET'
-    ]
+    required_vars = ['SESSION_SECRET']
+    
+    # Get environment
+    flask_env = os.environ.get('FLASK_ENV', 'development')
+    
+    # Check if DATABASE_URL is set for production
+    if flask_env == 'production':
+        required_vars.append('DATABASE_URL')
     
     missing_vars = []
     for var in required_vars:
@@ -24,29 +28,38 @@ def check_environment_variables():
             missing_vars.append(var)
     
     if missing_vars:
-        print(f"❌ Missing required environment variables: {', '.join(missing_vars)}")
+        print(f"❌ Missing environment variables: {', '.join(missing_vars)}")
         return False
     
-    print("✅ All required environment variables are set")
+    print(f"✅ All required environment variables are set for {flask_env} environment")
     return True
 
 def check_database_connectivity():
     """Check if database connection is working"""
     try:
+        flask_env = os.environ.get('FLASK_ENV', 'development')
         database_url = os.environ.get('DATABASE_URL')
-        if not database_url:
-            print("❌ DATABASE_URL not set")
-            return False
         
-        conn = psycopg2.connect(database_url)
-        cur = conn.cursor()
-        cur.execute('SELECT 1')
-        cur.close()
-        conn.close()
+        if flask_env == 'production' and database_url and database_url.startswith('postgresql'):
+            # Check PostgreSQL connection for production
+            conn = psycopg2.connect(database_url)
+            cur = conn.cursor()
+            cur.execute('SELECT 1')
+            cur.close()
+            conn.close()
+            print("✅ PostgreSQL database connection successful (production)")
+        else:
+            # Check SQLite connection for development
+            import sqlite3
+            db_file = 'movingbridge_dev.db' if flask_env == 'development' else 'movingbridge.db'
+            conn = sqlite3.connect(db_file)
+            cur = conn.cursor()
+            cur.execute('SELECT 1')
+            cur.close()
+            conn.close()
+            print(f"✅ SQLite database connection successful ({flask_env})")
         
-        print("✅ Database connection successful")
         return True
-        
     except Exception as e:
         print(f"❌ Database connection failed: {e}")
         return False

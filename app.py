@@ -1189,13 +1189,25 @@ def get_reactions_filter(post_type, post_id):
     return get_post_reactions(post_type, post_id)
 
 def get_db_connection():
-    try:
-        database_url = os.environ.get('DATABASE_URL')
-        if not database_url:
-            raise Exception("DATABASE_URL environment variable not set")
-        
-        conn = psycopg2.connect(database_url, cursor_factory=psycopg2.extras.RealDictCursor)
+    """Get database connection based on environment"""
+    database_url = app.config.get('SQLALCHEMY_DATABASE_URI')
+    
+    if database_url and database_url.startswith('postgresql'):
+        # Production: Use PostgreSQL
+        try:
+            conn = psycopg2.connect(database_url, cursor_factory=psycopg2.extras.RealDictCursor)
+            return conn
+        except Exception as e:
+            logging.error(f"PostgreSQL connection error: {e}")
+            raise
+    else:
+        # Development/Testing: Use SQLite
+        if database_url == 'sqlite:///:memory:':
+            # For testing
+            conn = sqlite3.connect(':memory:')
+        else:
+            # For development
+            db_file = database_url.replace('sqlite:///', '') if database_url else 'movingbridge_dev.db'
+            conn = sqlite3.connect(db_file)
+        conn.row_factory = sqlite3.Row
         return conn
-    except Exception as e:
-        logging.error(f"Database connection failed: {e}")
-        return None
