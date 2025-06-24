@@ -2,6 +2,7 @@ import os
 import logging
 import psycopg2
 import psycopg2.extras
+import sqlite3
 import re
 from datetime import datetime
 from dotenv import load_dotenv
@@ -13,6 +14,7 @@ from wtforms.validators import DataRequired, Length, Optional, URL
 from flask_talisman import Talisman
 from werkzeug.security import generate_password_hash, check_password_hash
 from markupsafe import Markup
+from config import get_config
 
 # Load environment variables
 load_dotenv()
@@ -21,12 +23,10 @@ load_dotenv()
 logging.basicConfig(level=logging.DEBUG)
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SESSION_SECRET")
 
-# Configure session for production deployment
-app.config['SESSION_COOKIE_SECURE'] = False  # Allow HTTP in development
-app.config['SESSION_COOKIE_HTTPONLY'] = True
-app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+# Load configuration based on environment
+config_class = get_config()
+app.config.from_object(config_class)
 
 # Enable auto-escaping for all templates for XSS protection
 app.jinja_env.autoescape = True
