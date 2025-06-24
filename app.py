@@ -679,35 +679,46 @@ def login():
         
         try:
             with conn.cursor() as cur:
-                # Try to find user by username or email
-                cur.execute('SELECT * FROM users WHERE username = %s OR email = %s', (login_id, login_id))
+                # Check companies table first
+                cur.execute('SELECT id, company_name, email, password_hash FROM companies WHERE email = %s', 
+                           (login_id,))
+                company = cur.fetchone()
+                
+                if company and check_password_hash(company[3], password):
+                    session.clear()
+                    session.permanent = True
+                    session['user_id'] = company[0]
+                    session['username'] = company[1]
+                    session['email'] = company[2]
+                    session['role'] = 'company'
+                    session['user_type'] = 'company'
+                    
+                    flash(f'{company[1]} 업체 관리자님 환영합니다!', 'success')
+                    return redirect(url_for('index'))
+                
+                # Check users table if not found in companies
+                cur.execute('SELECT id, username, email, password FROM users WHERE username = %s OR email = %s', 
+                           (login_id, login_id))
                 user = cur.fetchone()
+                
+                if user and check_password_hash(user[3], password):
+                    session.clear()
+                    session.permanent = True
+                    session['user_id'] = user[0]
+                    session['username'] = user[1]
+                    session['email'] = user[2]
+                    session['role'] = 'user'
+                    session['user_type'] = 'worker'
+                    
+                    flash(f'{user[1]}님 환영합니다!', 'success')
+                    return redirect(url_for('index'))
+                else:
+                    flash('아이디 또는 비밀번호가 올바르지 않습니다.', 'error')
         except Exception as e:
             logging.error(f"Error during login: {e}")
             flash('로그인 중 오류가 발생했습니다.', 'error')
-            return render_template('login.html')
         finally:
             conn.close()
-        
-        if user and check_password_hash(user['password'], password):
-            session['user_id'] = user['id']
-            session['username'] = user['username']
-            session['email'] = user['email']
-            session['role'] = user.get('role', 'user')  # Default to 'user' if role is not set
-            flash(f'{user["username"]}님 환영합니다!', 'success')
-            
-            # Redirect to intended page or home
-            next_page = request.args.get('next')
-            if next_page:
-                # Validate redirect URL to prevent open redirect attacks
-                from urllib.parse import urlparse
-                parsed_url = urlparse(next_page)
-                # Only allow relative URLs (no netloc) or URLs from the same domain
-                if not parsed_url.netloc or parsed_url.netloc == request.host:
-                    return redirect(next_page)
-            return redirect(url_for('index'))
-        else:
-            flash('아이디 또는 비밀번호가 올바르지 않습니다.', 'error')
     
     return render_template('login.html')
 
