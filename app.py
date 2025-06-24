@@ -56,6 +56,104 @@ class AdminLoginForm(FlaskForm):
     password = PasswordField('비밀번호', validators=[DataRequired()])
     submit = SubmitField('로그인')
 
+class Step1RegisterForm(FlaskForm):
+    name = StringField('이름', validators=[DataRequired(), Length(min=1, max=50)])
+    nationality = StringField('국적', validators=[DataRequired(), Length(min=1, max=50)])
+    gender = SelectField('성별', choices=[('', '선택해주세요'), ('male', '남성'), ('female', '여성')], validators=[DataRequired()])
+    korean_fluent = SelectField('한국어 가능 여부', choices=[('', '선택해주세요'), ('yes', '예'), ('no', '아니오')], validators=[DataRequired()])
+    languages = StringField('구사 언어', validators=[DataRequired(), Length(min=1, max=200)])
+    preferred_jobs = SelectField('희망 직무', choices=[
+        ('', '선택해주세요'),
+        ('moving', '이사 작업'),
+        ('construction', '건설업'),
+        ('manufacturing', '제조업'),
+        ('delivery', '배송업'),
+        ('cleaning', '청소업'),
+        ('restaurant', '음식점'),
+        ('other', '기타')
+    ], validators=[DataRequired()])
+    preferred_location = SelectField('희망 지역', choices=[
+        ('', '선택해주세요'),
+        ('seoul', '서울'),
+        ('busan', '부산'),
+        ('incheon', '인천'),
+        ('daegu', '대구'),
+        ('daejeon', '대전'),
+        ('gwangju', '광주'),
+        ('ulsan', '울산'),
+        ('gyeonggi', '경기도'),
+        ('gangwon', '강원도'),
+        ('chungbuk', '충청북도'),
+        ('chungnam', '충청남도'),
+        ('jeonbuk', '전라북도'),
+        ('jeonnam', '전라남도'),
+        ('gyeongbuk', '경상북도'),
+        ('gyeongnam', '경상남도'),
+        ('jeju', '제주도')
+    ], validators=[DataRequired()])
+    availability = SelectField('근무 가능 여부', choices=[
+        ('', '선택해주세요'),
+        ('immediate', '즉시 가능'),
+        ('negotiable', '조율 필요')
+    ], validators=[DataRequired()])
+    self_intro = TextAreaField('자기소개', validators=[DataRequired(), Length(min=10, max=1000)])
+    video_link = StringField('자기소개 영상 링크 (선택)', validators=[Optional(), URL()])
+    submit = SubmitField('등록하기')
+
+class Step2RegisterForm(FlaskForm):
+    visa_type = SelectField('체류 자격', choices=[
+        ('', '선택해주세요'),
+        ('E-9', 'E-9 (비전문취업)'),
+        ('H-2', 'H-2 (방문취업)'),
+        ('F-4', 'F-4 (재외동포)'),
+        ('F-5', 'F-5 (영주)'),
+        ('F-6', 'F-6 (결혼이민)'),
+        ('other', '기타')
+    ])
+    visa_expiry = DateField('체류 만료일')
+    past_jobs = TextAreaField('이전 근무 경험')
+    expected_salary = SelectField('희망 급여 수준', choices=[
+        ('', '선택해주세요'),
+        ('2000000-2500000', '200만원 - 250만원'),
+        ('2500000-3000000', '250만원 - 300만원'),
+        ('3000000-3500000', '300만원 - 350만원'),
+        ('3500000-4000000', '350만원 - 400만원'),
+        ('4000000+', '400만원 이상'),
+        ('negotiable', '협의 가능')
+    ])
+    housing_preference = SelectField('숙소 제공 선호', choices=[
+        ('', '선택해주세요'),
+        ('required', '필수'),
+        ('preferred', '선호'),
+        ('not_needed', '필요 없음')
+    ])
+    licenses = SelectMultipleField('자격증 보유 여부', choices=[
+        ('forklift', '지게차 운전'),
+        ('crane', '크레인 운전'),
+        ('welding', '용접'),
+        ('electrical', '전기'),
+        ('cooking', '조리'),
+        ('driving', '운전면허'),
+        ('other', '기타')
+    ], widget=widgets.ListWidget(prefix_label=False), option_widget=widgets.CheckboxInput())
+    religion = SelectField('종교', choices=[
+        ('', '선택해주세요'),
+        ('none', '무교'),
+        ('christian', '기독교'),
+        ('buddhist', '불교'),
+        ('catholic', '천주교'),
+        ('islam', '이슬람교'),
+        ('other', '기타')
+    ])
+    work_hours = SelectField('근무 가능 시간', choices=[
+        ('', '선택해주세요'),
+        ('day', '주간근무'),
+        ('night', '야간근무'),
+        ('shift', '교대근무'),
+        ('flexible', '유연근무')
+    ])
+    submit = SubmitField('정보 업데이트')
+
 # Security headers with Flask-Talisman
 csp = {
     'default-src': "'self'",
@@ -436,10 +534,12 @@ def require_admin():
         return redirect(url_for('admin_login'))
     return None
 
-# User authentication routes
+# Step 1 Registration route 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    if request.method == 'POST':
+    form = Step1RegisterForm()
+    
+    if form.validate_on_submit():
         username = sanitize_input(request.form.get('username', ''))
         email = sanitize_input(request.form.get('email', ''))
         password = request.form.get('password', '')  # Don't sanitize passwords

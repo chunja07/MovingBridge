@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}추가 정보 입력 - 2단계 - 무빙브릿지{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white text-center">
+                    <h3 class="mb-0">외국인 구직자 등록 - 2단계</h3>
+                    <small>추가 정보를 입력해주세요 (선택사항)</small>
+                </div>
+                <div class="card-body">
+                    <div class="progress mb-4">
+                        <div class="progress-bar bg-primary" role="progressbar" style="width: 100%">
+                            2단계 / 2단계
+                        </div>
+                    </div>
+                    
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.visa_type.label(class="form-label") }}
+                                {{ form.visa_type(class="form-select") }}
+                                {% for error in form.visa_type.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                {{ form.visa_expiry.label(class="form-label") }}
+                                {{ form.visa_expiry(class="form-control") }}
+                                {% for error in form.visa_expiry.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.past_jobs.label(class="form-label") }}
+                            {{ form.past_jobs(class="form-control", rows="3", placeholder="예: 건설업 2년 (2020-2022), 제조업 1년 (2023)") }}
+                            <div class="form-text">이전 근무 경험을 입력해주세요</div>
+                            {% for error in form.past_jobs.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.expected_salary.label(class="form-label") }}
+                                {{ form.expected_salary(class="form-select") }}
+                                {% for error in form.expected_salary.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                {{ form.housing_preference.label(class="form-label") }}
+                                {{ form.housing_preference(class="form-select") }}
+                                {% for error in form.housing_preference.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.licenses.label(class="form-label") }}
+                            <div class="row">
+                                {% for subfield in form.licenses %}
+                                <div class="col-md-6 mb-2">
+                                    <div class="form-check">
+                                        {{ subfield(class="form-check-input") }}
+                                        {{ subfield.label(class="form-check-label") }}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% for error in form.licenses.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.religion.label(class="form-label") }}
+                                {{ form.religion(class="form-select") }}
+                                {% for error in form.religion.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                {{ form.work_hours.label(class="form-label") }}
+                                {{ form.work_hours(class="form-select") }}
+                                {% for error in form.work_hours.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            {{ form.submit(class="btn btn-primary btn-lg") }}
+                            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                                나중에 입력하기
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
