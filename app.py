@@ -8,8 +8,8 @@ from dotenv import load_dotenv
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from flask_wtf.csrf import CSRFProtect
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField
-from wtforms.validators import DataRequired
+from wtforms import StringField, PasswordField, SubmitField, TextAreaField, SelectField, SelectMultipleField, DateField, widgets
+from wtforms.validators import DataRequired, Length, Optional, URL
 from flask_talisman import Talisman
 from werkzeug.security import generate_password_hash, check_password_hash
 from markupsafe import Markup
@@ -540,96 +540,51 @@ def register():
     form = Step1RegisterForm()
     
     if form.validate_on_submit():
-        username = sanitize_input(request.form.get('username', ''))
-        email = sanitize_input(request.form.get('email', ''))
-        password = request.form.get('password', '')  # Don't sanitize passwords
-        confirm_password = request.form.get('confirm_password', '')
-        terms_agreed = request.form.get('terms_agreed') == 'on'
-        
-        # Basic validation
-        if not username or not email or not password:
-            flash('모든 필수 항목을 입력해주세요.', 'error')
-            return render_template('register.html')
-        
-        if not terms_agreed:
-            flash('이용약관에 동의해주세요.', 'error')
-            return render_template('register.html')
-        
-        # Username validation
-        if len(username) < 3:
-            flash('사용자명은 3글자 이상이어야 합니다.', 'error')
-            return render_template('register.html')
-        
-        if len(username) > 20:
-            flash('사용자명은 20글자 이하여야 합니다.', 'error')
-            return render_template('register.html')
-        
-        # Email validation
-        if not is_valid_email(email):
-            flash('올바른 이메일 주소를 입력해주세요.', 'error')
-            return render_template('register.html')
-        
-        # Password validation
-        if len(password) < 8:
-            flash('비밀번호는 8글자 이상이어야 합니다.', 'error')
-            return render_template('register.html')
-        
-        if not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
-            flash('비밀번호에는 최소 1개의 특수문자가 포함되어야 합니다.', 'error')
-            return render_template('register.html')
-        
-        if not re.search(r'\d', password):
-            flash('비밀번호에는 최소 1개의 숫자가 포함되어야 합니다.', 'error')
-            return render_template('register.html')
-        
-        if not re.search(r'[a-zA-Z]', password):
-            flash('비밀번호에는 최소 1개의 영문자가 포함되어야 합니다.', 'error')
-            return render_template('register.html')
-        
-        if password != confirm_password:
-            flash('비밀번호가 일치하지 않습니다.', 'error')
-            return render_template('register.html')
-        
-        # Check if username or email already exists
         conn = get_db_connection()
         if not conn:
             flash('데이터베이스 연결 오류가 발생했습니다.', 'error')
-            return render_template('register.html')
+            return render_template('register.html', form=form)
         
         try:
             with conn.cursor() as cur:
-                cur.execute('SELECT id FROM users WHERE username = %s OR email = %s', (username, email))
-                existing_user = cur.fetchone()
+                # Insert into introductions table with step 1 data
+                cur.execute('''
+                    INSERT INTO introductions (
+                        name, nationality, gender, korean_fluent, languages,
+                        preferred_jobs, preferred_location, availability, 
+                        introduction, video_link, step_completed, created_at
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
+                    RETURNING id
+                ''', (
+                    form.name.data,
+                    form.nationality.data,
+                    form.gender.data,
+                    form.korean_fluent.data == 'yes',
+                    form.languages.data,
+                    form.preferred_jobs.data,
+                    form.preferred_location.data,
+                    form.availability.data,
+                    form.self_intro.data,
+                    form.video_link.data or None,
+                    1  # Step 1 completed
+                ))
                 
-                if existing_user:
-                    cur.execute('SELECT id FROM users WHERE username = %s', (username,))
-                    existing_username = cur.fetchone()
-                    cur.execute('SELECT id FROM users WHERE email = %s', (email,))
-                    existing_email = cur.fetchone()
-                    
-                    if existing_username:
-                        flash('이미 사용 중인 사용자명입니다.', 'error')
-                    if existing_email:
-                        flash('이미 사용 중인 이메일 주소입니다.', 'error')
-                    return render_template('register.html')
-                
-                # Create new user
-                hashed_password = generate_password_hash(password)
-                cur.execute('INSERT INTO users (username, email, password) VALUES (%s, %s, %s)', 
-                           (username, email, hashed_password))
+                intro_id = cur.fetchone()[0]
                 conn.commit()
                 
-                flash('회원가입이 완료되었습니다. 로그인해주세요.', 'success')
-                return redirect(url_for('login'))
+                # Store intro_id in session for step 2
+                session['intro_id'] = intro_id
+                flash('1단계 등록이 완료되었습니다!', 'success')
+                return redirect(url_for('success'))
                 
         except Exception as e:
-            logging.error(f"Error during registration: {e}")
-            flash('회원가입 중 오류가 발생했습니다.', 'error')
-            return render_template('register.html')
+            logging.error(f"Error creating introduction: {e}")
+            flash('등록 중 오류가 발생했습니다.', 'error')
+            return render_template('register.html', form=form)
         finally:
             conn.close()
     
-    return render_template('register.html')
+    return render_template('register.html', form=form)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -690,6 +645,65 @@ def logout():
     if username:
         flash(f'{username}님 로그아웃되었습니다.', 'success')
     return redirect(url_for('index'))
+
+# Success page route
+@app.route('/success')
+def success():
+    return render_template('success.html')
+
+# Step 2 Registration route
+@app.route('/more-info', methods=['GET', 'POST'])
+def more_info():
+    form = Step2RegisterForm()
+    
+    if form.validate_on_submit():
+        intro_id = session.get('intro_id')
+        if not intro_id:
+            flash('등록 정보를 찾을 수 없습니다. 다시 등록해주세요.', 'error')
+            return redirect(url_for('register'))
+        
+        conn = get_db_connection()
+        if not conn:
+            flash('데이터베이스 연결 오류가 발생했습니다.', 'error')
+            return render_template('more_info.html', form=form)
+        
+        try:
+            with conn.cursor() as cur:
+                # Update the existing record with step 2 data
+                cur.execute('''
+                    UPDATE introductions SET
+                        visa_type = %s, visa_expiry = %s, past_jobs = %s,
+                        expected_salary = %s, housing_preference = %s,
+                        licenses = %s, religion = %s, work_hours = %s,
+                        step_completed = %s
+                    WHERE id = %s
+                ''', (
+                    form.visa_type.data or None,
+                    form.visa_expiry.data,
+                    form.past_jobs.data or None,
+                    form.expected_salary.data or None,
+                    form.housing_preference.data or None,
+                    ','.join(form.licenses.data) if form.licenses.data else None,
+                    form.religion.data or None,
+                    form.work_hours.data or None,
+                    2,  # Step 2 completed
+                    intro_id
+                ))
+                conn.commit()
+                
+                # Clear session
+                session.pop('intro_id', None)
+                flash('추가 정보가 성공적으로 등록되었습니다!', 'success')
+                return redirect(url_for('intro_list'))
+                
+        except Exception as e:
+            logging.error(f"Error updating introduction: {e}")
+            flash('정보 업데이트 중 오류가 발생했습니다.', 'error')
+            return render_template('more_info.html', form=form)
+        finally:
+            conn.close()
+    
+    return render_template('more_info.html', form=form)
 
 # Admin routes
 @app.route('/admin/login', methods=['GET', 'POST'])
