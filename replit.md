@@ -101,6 +101,7 @@ Recent Changes:
 - June 24, 2025: Created company registration with business verification fields
 - June 24, 2025: Enhanced nationality dropdown with 41 countries (Asia, North America, Europe, South America)
 - June 24, 2025: Improved language selection with English labels and 36 language options
+- June 24, 2025: Implemented environment separation (development/production) with different database and security settings
 
 ## User Preferences
 

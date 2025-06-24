@@ -285,14 +285,8 @@ csp = {
     ]
 }
 
-talisman = Talisman(
-    app,
-    force_https=False,  # Allow HTTP in development
-    strict_transport_security=False,  # Disable HSTS in development
-    content_security_policy=csp,
-    session_cookie_secure=False,  # Allow non-HTTPS cookies in development
-    session_cookie_http_only=True
-)
+# Initialize Talisman with environment-specific settings
+talisman = Talisman(app, **app.config['TALISMAN_CONFIG'])
 
 # Configure secure session cookies
 app.config.update(
