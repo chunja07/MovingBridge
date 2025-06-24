@@ -254,39 +254,8 @@ class CompanyRegisterForm(FlaskForm):
     company_description = TextAreaField('회사 소개', validators=[Optional(), Length(max=500)])
     submit = SubmitField('회원가입')
 
-# Security headers with Flask-Talisman
-csp = {
-    'default-src': "'self'",
-    'script-src': [
-        "'self'",
-        "'unsafe-inline'",
-        "https://cdn.jsdelivr.net",
-        "https://cdn.replit.com"
-    ],
-    'style-src': [
-        "'self'",
-        "'unsafe-inline'",
-        "https://cdn.jsdelivr.net",
-        "https://cdn.replit.com"
-    ],
-    'img-src': [
-        "'self'",
-        "data:",
-        "https:"
-    ],
-    'font-src': [
-        "'self'",
-        "https://cdn.jsdelivr.net",
-        "https://cdn.replit.com"
-    ],
-    'frame-src': [
-        "https://www.youtube.com",
-        "https://youtube.com"
-    ]
-}
-
-# Initialize Talisman with environment-specific settings
-talisman = Talisman(app, **app.config['TALISMAN_CONFIG'])
+# Initialize Talisman - disabled for development
+# talisman = Talisman(app, force_https=False, strict_transport_security=False, content_security_policy=False)
 
 # Configure secure session cookies
 app.config.update(
