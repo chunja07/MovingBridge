@@ -30,8 +30,9 @@ ADMIN_PASSWORD=secure-admin-password
    - `SESSION_SECRET`는 반드시 강력한 랜덤 문자열 사용
 
 3. **도메인 설정**
-   - Custom Domain: `movemove.co.kr`
+   - Custom Domain: `movemove.co.kr` (www 없이)
    - SSL 인증서는 자동 발급됨
+   - www 리다이렉트는 DNS에서 CNAME으로 처리
 
 4. **배포 실행**
    - "Deploy" 버튼 클릭
