@@ -103,6 +103,8 @@ Recent Changes:
 - June 24, 2025: Improved language selection with English labels and 36 language options
 - June 24, 2025: Implemented environment separation (development/production) with different database and security settings
 - June 24, 2025: Moved admin login from navigation bar to footer for cleaner UI layout
+- June 25, 2025: Added English translations to nationality dropdown for consistency with language options
+- June 25, 2025: Diagnosed domain connection failure - DNS A records not set at Gabia nameserver
 
 ## User Preferences
 
