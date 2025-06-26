@@ -105,6 +105,7 @@ Recent Changes:
 - June 24, 2025: Moved admin login from navigation bar to footer for cleaner UI layout
 - June 25, 2025: Added English translations to nationality dropdown for consistency with language options
 - June 25, 2025: Diagnosed domain connection failure - DNS A records not set at Gabia nameserver
+- June 26, 2025: DNS settings corrected - hostname changed from 'movemove' to '@' for proper root domain configuration
 
 ## User Preferences
 
