@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- Truck body -->
+  <rect x="4" y="12" width="18" height="8" fill="#4A90E2" rx="1"/>
+  
+  <!-- Truck cab -->
+  <rect x="22" y="10" width="6" height="10" fill="#357ABD" rx="1"/>
+  
+  <!-- Truck windows -->
+  <rect x="23" y="11" width="4" height="3" fill="#E8F4FD" rx="0.5"/>
+  
+  <!-- Moving boxes -->
+  <rect x="6" y="13" width="3" height="3" fill="#F5A623" rx="0.3"/>
+  <rect x="10" y="13" width="3" height="3" fill="#D0021B" rx="0.3"/>
+  <rect x="14" y="13" width="3" height="3" fill="#7ED321" rx="0.3"/>
+  <rect x="8" y="16" width="3" height="3" fill="#9013FE" rx="0.3"/>
+  <rect x="12" y="16" width="3" height="3" fill="#50E3C2" rx="0.3"/>
+  
+  <!-- Wheels -->
+  <circle cx="8" cy="22" r="2.5" fill="#2C2C2C"/>
+  <circle cx="8" cy="22" r="1.5" fill="#666"/>
+  <circle cx="24" cy="22" r="2.5" fill="#2C2C2C"/>
+  <circle cx="24" cy="22" r="1.5" fill="#666"/>
+  
+  <!-- Korean bridge element -->
+  <path d="M2 26 L6 24 L10 26 L14 24 L18 26 L22 24 L26 26 L30 24" 
+        stroke="#4A90E2" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+</svg>
