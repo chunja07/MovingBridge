@@ -261,6 +261,7 @@ class Step2RegisterForm(FlaskForm):
 
 class CompanyRegisterForm(FlaskForm):
     company_name = StringField('회사명', validators=[DataRequired(), Length(min=2, max=100)])
+    username = StringField('아이디', validators=[DataRequired(), Length(min=4, max=20)])
     business_number = StringField('사업자등록번호', validators=[DataRequired(), Length(min=10, max=20)])
     ceo_name = StringField('대표자명', validators=[DataRequired(), Length(min=2, max=50)])
     contact_number = StringField('연락처', validators=[DataRequired(), Length(min=10, max=20)])
@@ -280,7 +281,7 @@ class CompanyRegisterForm(FlaskForm):
             raise ValidationError('올바른 이메일 주소를 입력해주세요.')
 
 class LoginForm(FlaskForm):
-    email = StringField('이메일', validators=[DataRequired(), Length(min=5, max=120)])
+    email = StringField('이메일 또는 아이디', validators=[DataRequired(), Length(min=3, max=120)])
     password = PasswordField('비밀번호', validators=[DataRequired()])
     submit = SubmitField('로그인')
 
@@ -653,23 +654,24 @@ def register_company():
         try:
             with conn.cursor() as cur:
                 # Check if company already exists
-                cur.execute('SELECT id FROM companies WHERE email = %s OR business_number = %s', 
-                           (form.email.data, form.business_number.data))
+                cur.execute('SELECT id FROM companies WHERE email = %s OR business_number = %s OR username = %s', 
+                           (form.email.data, form.business_number.data, form.username.data))
                 existing_company = cur.fetchone()
                 
                 if existing_company:
-                    flash('이미 등록된 이메일 또는 사업자등록번호입니다.', 'error')
+                    flash('이미 등록된 이메일, 아이디 또는 사업자등록번호입니다.', 'error')
                     return render_template('register_company.html', form=form)
                 
                 # Hash password and create company
                 password_hash = generate_password_hash(form.password.data)
                 cur.execute('''
                     INSERT INTO companies (
-                        company_name, business_number, ceo_name, contact_number,
+                        company_name, username, business_number, ceo_name, contact_number,
                         email, password_hash, address, company_description, created_at
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, NOW())
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
                 ''', (
                     form.company_name.data,
+                    form.username.data,
                     form.business_number.data,
                     form.ceo_name.data,
                     form.contact_number.data,
@@ -790,7 +792,7 @@ def login():
     form = LoginForm()
     
     if form.validate_on_submit():
-        login_id = form.email.data.strip().lower()  # Using email field as login ID
+        login_id = form.email.data.strip()  # Can be email or username
         password = form.password.data
         
         conn = get_db_connection()
@@ -800,16 +802,19 @@ def login():
         
         try:
             cur = conn.cursor()
-            # Check companies table first
-            cur.execute('SELECT id, company_name, email, password_hash FROM companies WHERE email = %s', 
-                       (login_id,))
+            # Check companies table first (by email or username)
+            cur.execute('''
+                SELECT id, company_name, email, password_hash, username 
+                FROM companies 
+                WHERE email = %s OR username = %s
+            ''', (login_id.lower(), login_id))
             company = cur.fetchone()
             
             if company and check_password_hash(company[3], password):
                 session.clear()
                 session.permanent = True
                 session['user_id'] = company[0]
-                session['username'] = company[1]
+                session['username'] = company[4] or company[1]  # Use username or company_name
                 session['email'] = company[2]
                 session['role'] = 'company'
                 session['user_type'] = 'company'
@@ -818,8 +823,11 @@ def login():
                 return redirect(url_for('index'))
             
             # Check users table if not found in companies (for worker accounts)
-            cur.execute('SELECT id, username, email, password_hash FROM users WHERE email = %s', 
-                       (login_id,))
+            cur.execute('''
+                SELECT id, username, email, password_hash 
+                FROM users 
+                WHERE email = %s OR username = %s
+            ''', (login_id.lower(), login_id))
             user = cur.fetchone()
             
             if user and check_password_hash(user[3], password):
@@ -834,7 +842,7 @@ def login():
                 flash(f'{user[1]}님 환영합니다!', 'success')
                 return redirect(url_for('index'))
             else:
-                flash('이메일 또는 비밀번호가 올바르지 않습니다.', 'error')
+                flash('아이디/이메일 또는 비밀번호가 올바르지 않습니다.', 'error')
         except Exception as e:
             logging.error(f"Error during login: {e}")
             flash('로그인 중 오류가 발생했습니다.', 'error')

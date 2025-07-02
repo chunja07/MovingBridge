@@ -25,6 +25,16 @@
                             </div>
                             
                             <div class="col-md-6 mb-3">
+                                {{ form.username.label(class="form-label") }}
+                                {{ form.username(class="form-control") }}
+                                {% for error in form.username.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
                                 {{ form.business_number.label(class="form-label") }}
                                 {{ form.business_number(class="form-control") }}
                                 {% for error in form.business_number.errors %}
