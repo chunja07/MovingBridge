@@ -10,7 +10,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 from flask_wtf.csrf import CSRFProtect
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, TextAreaField, SelectField, SelectMultipleField, DateField, widgets
-from wtforms.validators import DataRequired, Length, Optional, URL
+from wtforms.validators import DataRequired, Length, Optional, URL, ValidationError
 from flask_talisman import Talisman
 from werkzeug.security import generate_password_hash, check_password_hash
 from markupsafe import Markup
@@ -149,7 +149,11 @@ class Step1RegisterForm(FlaskForm):
         ('Norwegian', '노르웨이어 (Norwegian)'),
         ('Finnish', '핀란드어 (Finnish)'),
         ('Other', '기타 (Other)')
-    ], widget=widgets.ListWidget(prefix_label=False), option_widget=widgets.CheckboxInput(), validators=[DataRequired()])
+    ], widget=widgets.ListWidget(prefix_label=False), option_widget=widgets.CheckboxInput())
+    
+    def validate_languages(self, field):
+        if not field.data or len(field.data) == 0:
+            raise ValidationError('최소 1개 이상의 언어를 선택해주세요.')
     preferred_jobs = SelectField('희망 직무', choices=[
         ('', '선택해주세요'),
         ('moving', '이사 작업'),
@@ -162,6 +166,7 @@ class Step1RegisterForm(FlaskForm):
     ], validators=[DataRequired()])
     preferred_location = SelectField('희망 지역', choices=[
         ('', '선택해주세요'),
+        ('anywhere', '무관'),
         ('seoul', '서울'),
         ('busan', '부산'),
         ('incheon', '인천'),
