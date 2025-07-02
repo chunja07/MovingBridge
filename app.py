@@ -58,6 +58,10 @@ class AdminLoginForm(FlaskForm):
 
 class Step1RegisterForm(FlaskForm):
     name = StringField('이름', validators=[DataRequired(), Length(min=1, max=50)])
+    username = StringField('아이디', validators=[DataRequired(), Length(min=4, max=20)])
+    email = StringField('이메일', validators=[DataRequired(), Length(min=5, max=120)])
+    password = PasswordField('비밀번호', validators=[DataRequired(), Length(min=6, max=128)])
+    confirm_password = PasswordField('비밀번호 확인', validators=[DataRequired()])
     nationality = SelectField('국적', choices=[
         ('', '선택해주세요'),
         # 아시아
@@ -150,6 +154,14 @@ class Step1RegisterForm(FlaskForm):
         ('Finnish', '핀란드어 (Finnish)'),
         ('Other', '기타 (Other)')
     ], widget=widgets.ListWidget(prefix_label=False), option_widget=widgets.CheckboxInput())
+    
+    def validate_confirm_password(self, field):
+        if field.data != self.password.data:
+            raise ValidationError('비밀번호가 일치하지 않습니다.')
+    
+    def validate_email(self, field):
+        if not is_valid_email(field.data):
+            raise ValidationError('올바른 이메일 주소를 입력해주세요.')
     
     def validate_languages(self, field):
         if not field.data or len(field.data) == 0:
@@ -698,15 +710,35 @@ def register():
         
         try:
             cur = conn.cursor()
-            # Insert into introductions table with step 1 data
+            
+            # First, create user account in users table
+            password_hash = generate_password_hash(form.password.data)
+            cur.execute('''
+                INSERT INTO users (username, email, password_hash, name) 
+                VALUES (%s, %s, %s, %s) RETURNING id
+            ''', (
+                form.username.data,
+                form.email.data.lower(),
+                password_hash,
+                form.name.data
+            ))
+            
+            user_result = cur.fetchone()
+            user_id = user_result[0] if user_result else None
+            
+            if user_id is None:
+                raise Exception("Failed to create user account")
+            
+            # Then, insert into introductions table with step 1 data
             cur.execute('''
                 INSERT INTO introductions (
-                    name, nationality, gender, korean_fluent, languages,
+                    user_id, name, nationality, gender, korean_fluent, languages,
                     preferred_jobs, preferred_location, availability, 
                     introduction, step_completed
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 RETURNING id
             ''', (
+                user_id,
                 form.name.data,
                 form.nationality.data,
                 form.gender.data,
@@ -755,63 +787,62 @@ def register():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    if request.method == 'POST':
-        login_id = sanitize_input(request.form.get('username', ''))  # Can be username or email
-        password = request.form.get('password', '')
-        
-        if not login_id or not password:
-            flash('아이디와 비밀번호를 모두 입력해주세요.', 'error')
-            return render_template('login.html')
+    form = LoginForm()
+    
+    if form.validate_on_submit():
+        login_id = form.email.data.strip().lower()  # Using email field as login ID
+        password = form.password.data
         
         conn = get_db_connection()
         if not conn:
             flash('데이터베이스 연결 오류가 발생했습니다.', 'error')
-            return render_template('login.html')
+            return render_template('login.html', form=form)
         
         try:
-            with conn.cursor() as cur:
-                # Check companies table first
-                cur.execute('SELECT id, company_name, email, password_hash FROM companies WHERE email = %s', 
-                           (login_id,))
-                company = cur.fetchone()
+            cur = conn.cursor()
+            # Check companies table first
+            cur.execute('SELECT id, company_name, email, password_hash FROM companies WHERE email = %s', 
+                       (login_id,))
+            company = cur.fetchone()
+            
+            if company and check_password_hash(company[3], password):
+                session.clear()
+                session.permanent = True
+                session['user_id'] = company[0]
+                session['username'] = company[1]
+                session['email'] = company[2]
+                session['role'] = 'company'
+                session['user_type'] = 'company'
                 
-                if company and check_password_hash(company[3], password):
-                    session.clear()
-                    session.permanent = True
-                    session['user_id'] = company[0]
-                    session['username'] = company[1]
-                    session['email'] = company[2]
-                    session['role'] = 'company'
-                    session['user_type'] = 'company'
-                    
-                    flash(f'{company[1]} 업체 관리자님 환영합니다!', 'success')
-                    return redirect(url_for('index'))
+                flash(f'{company[1]} 업체 관리자님 환영합니다!', 'success')
+                return redirect(url_for('index'))
+            
+            # Check users table if not found in companies (for worker accounts)
+            cur.execute('SELECT id, username, email, password_hash FROM users WHERE email = %s', 
+                       (login_id,))
+            user = cur.fetchone()
+            
+            if user and check_password_hash(user[3], password):
+                session.clear()
+                session.permanent = True
+                session['user_id'] = user[0]
+                session['username'] = user[1]
+                session['email'] = user[2]
+                session['role'] = 'user'
+                session['user_type'] = 'worker'
                 
-                # Check users table if not found in companies
-                cur.execute('SELECT id, username, email, password FROM users WHERE username = %s OR email = %s', 
-                           (login_id, login_id))
-                user = cur.fetchone()
-                
-                if user and check_password_hash(user[3], password):
-                    session.clear()
-                    session.permanent = True
-                    session['user_id'] = user[0]
-                    session['username'] = user[1]
-                    session['email'] = user[2]
-                    session['role'] = 'user'
-                    session['user_type'] = 'worker'
-                    
-                    flash(f'{user[1]}님 환영합니다!', 'success')
-                    return redirect(url_for('index'))
-                else:
-                    flash('아이디 또는 비밀번호가 올바르지 않습니다.', 'error')
+                flash(f'{user[1]}님 환영합니다!', 'success')
+                return redirect(url_for('index'))
+            else:
+                flash('이메일 또는 비밀번호가 올바르지 않습니다.', 'error')
         except Exception as e:
             logging.error(f"Error during login: {e}")
             flash('로그인 중 오류가 발생했습니다.', 'error')
         finally:
+            cur.close()
             conn.close()
     
-    return render_template('login.html')
+    return render_template('login.html', form=form)
 
 @app.route('/logout')
 def logout():
