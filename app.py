@@ -678,39 +678,45 @@ def register():
             return render_template('register.html', form=form)
         
         try:
-            with conn.cursor() as cur:
-                # Insert into introductions table with step 1 data
-                cur.execute('''
-                    INSERT INTO introductions (
-                        name, nationality, gender, korean_fluent, languages,
-                        preferred_jobs, preferred_location, availability, 
-                        introduction, youtube_link, step_completed, created_at
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP)
-                    RETURNING id
-                ''', (
-                    form.name.data,
-                    form.nationality.data,
-                    form.gender.data,
-                    form.korean_fluent.data == 'yes',
-                    ','.join(form.languages.data) if form.languages.data else '',
-                    form.preferred_jobs.data,
-                    form.preferred_location.data,
-                    form.availability.data,
-                    form.self_intro.data,
-                    form.video_link.data or None,
-                    1  # Step 1 completed
-                ))
-                
-                intro_id = cur.fetchone()[0]
-                conn.commit()
-                
-                # Store intro_id in session for step 2
-                session['intro_id'] = intro_id
-                flash('1단계 등록이 완료되었습니다!', 'success')
-                return redirect(url_for('success'))
+            cur = conn.cursor()
+            # Insert into introductions table with step 1 data
+            cur.execute('''
+                INSERT INTO introductions (
+                    name, nationality, gender, korean_fluent, languages,
+                    preferred_jobs, preferred_location, availability, 
+                    introduction, youtube_link, step_completed, created_at
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP)
+                RETURNING id
+            ''', (
+                form.name.data,
+                form.nationality.data,
+                form.gender.data,
+                form.korean_fluent.data == 'yes',
+                ','.join(form.languages.data) if form.languages.data else '',
+                form.preferred_jobs.data,
+                form.preferred_location.data,
+                form.availability.data,
+                form.self_intro.data,
+                form.video_link.data or None,
+                1  # Step 1 completed
+            ))
+            
+            result = cur.fetchone()
+            if result is None:
+                raise Exception("INSERT did not return an ID")
+            intro_id = result[0]
+            conn.commit()
+            cur.close()
+            
+            # Store intro_id in session for step 2
+            session['intro_id'] = intro_id
+            flash('1단계 등록이 완료되었습니다!', 'success')
+            return redirect(url_for('success'))
                 
         except Exception as e:
             logging.error(f"Error creating introduction: {e}")
+            logging.error(f"Form data: name={form.name.data}, nationality={form.nationality.data}, gender={form.gender.data}")
+            logging.error(f"Languages: {form.languages.data}")
             flash('등록 중 오류가 발생했습니다.', 'error')
             return render_template('register.html', form=form)
         finally:
