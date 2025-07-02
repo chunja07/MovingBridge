@@ -680,14 +680,12 @@ def register():
         try:
             cur = conn.cursor()
             # Insert into introductions table with step 1 data
-            # Only insert required columns first
             cur.execute('''
                 INSERT INTO introductions (
                     name, nationality, gender, korean_fluent, languages,
                     preferred_jobs, preferred_location, availability, 
                     introduction, step_completed
                 ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                RETURNING id
             ''', (
                 form.name.data,
                 form.nationality.data,
@@ -701,9 +699,11 @@ def register():
                 1  # Step 1 completed
             ))
             
+            # Get the last inserted ID
+            cur.execute('SELECT lastval()')
             result = cur.fetchone()
             if result is None:
-                raise Exception("INSERT did not return an ID")
+                raise Exception("Could not get last inserted ID")
             intro_id = result[0]
             conn.commit()
             cur.close()
