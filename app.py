@@ -680,12 +680,13 @@ def register():
         try:
             cur = conn.cursor()
             # Insert into introductions table with step 1 data
+            # Only insert required columns first
             cur.execute('''
                 INSERT INTO introductions (
                     name, nationality, gender, korean_fluent, languages,
                     preferred_jobs, preferred_location, availability, 
-                    introduction, youtube_link, step_completed, created_at
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP)
+                    introduction, step_completed
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 RETURNING id
             ''', (
                 form.name.data,
@@ -697,7 +698,6 @@ def register():
                 form.preferred_location.data,
                 form.availability.data,
                 form.self_intro.data,
-                form.video_link.data or None,
                 1  # Step 1 completed
             ))
             
