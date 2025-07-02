@@ -683,13 +683,14 @@ def register():
         
         try:
             cur = conn.cursor()
-            # Insert into introductions table with step 1 data - use simpler approach
+            # Insert into introductions table with step 1 data
             cur.execute('''
                 INSERT INTO introductions (
                     name, nationality, gender, korean_fluent, languages,
                     preferred_jobs, preferred_location, availability, 
                     introduction, step_completed
                 ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                RETURNING id
             ''', (
                 form.name.data,
                 form.nationality.data,
@@ -703,11 +704,21 @@ def register():
                 1  # Step 1 completed
             ))
             
+            # Try to get the ID with proper error handling
+            try:
+                result = cur.fetchone()
+                intro_id = result[0] if result else None
+            except:
+                # If RETURNING doesn't work, get the max ID
+                cur.execute('SELECT MAX(id) FROM introductions WHERE name = %s', (form.name.data,))
+                result = cur.fetchone()
+                intro_id = result[0] if result else None
+            
             conn.commit()
             cur.close()
             
-            # For session, use a simple marker instead of ID
-            intro_id = "success"
+            if intro_id is None:
+                raise Exception("Could not get introduction ID")
             
             # Store intro_id in session for step 2
             session['intro_id'] = intro_id
