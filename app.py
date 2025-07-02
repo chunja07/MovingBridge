@@ -684,8 +684,8 @@ def register():
                     INSERT INTO introductions (
                         name, nationality, gender, korean_fluent, languages,
                         preferred_jobs, preferred_location, availability, 
-                        introduction, video_link, step_completed, created_at
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
+                        introduction, youtube_link, step_completed, created_at
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP)
                     RETURNING id
                 ''', (
                     form.name.data,
