@@ -276,6 +276,21 @@ class CompanyRegisterForm(FlaskForm):
         if field.data != self.password.data:
             raise ValidationError('비밀번호가 일치하지 않습니다.')
     
+    def validate_username(self, field):
+        conn = get_db_connection()
+        if conn:
+            try:
+                cur = conn.cursor()
+                # Check both companies and users tables for duplicate username
+                cur.execute('SELECT id FROM companies WHERE username = %s', (field.data,))
+                if cur.fetchone():
+                    raise ValidationError('이미 사용 중인 아이디입니다.')
+                cur.execute('SELECT id FROM users WHERE username = %s', (field.data,))
+                if cur.fetchone():
+                    raise ValidationError('이미 사용 중인 아이디입니다.')
+            finally:
+                conn.close()
+    
     def validate_email(self, field):
         if not is_valid_email(field.data):
             raise ValidationError('올바른 이메일 주소를 입력해주세요.')
