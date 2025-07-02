@@ -258,6 +258,19 @@ class CompanyRegisterForm(FlaskForm):
     address = StringField('회사 주소', validators=[DataRequired(), Length(min=5, max=200)])
     company_description = TextAreaField('회사 소개', validators=[Optional(), Length(max=500)])
     submit = SubmitField('회원가입')
+    
+    def validate_confirm_password(self, field):
+        if field.data != self.password.data:
+            raise ValidationError('비밀번호가 일치하지 않습니다.')
+    
+    def validate_email(self, field):
+        if not is_valid_email(field.data):
+            raise ValidationError('올바른 이메일 주소를 입력해주세요.')
+
+class LoginForm(FlaskForm):
+    email = StringField('이메일', validators=[DataRequired(), Length(min=5, max=120)])
+    password = PasswordField('비밀번호', validators=[DataRequired()])
+    submit = SubmitField('로그인')
 
 # Initialize Talisman - disabled for development
 # talisman = Talisman(app, force_https=False, strict_transport_security=False, content_security_policy=False)
@@ -601,6 +614,8 @@ def require_admin():
         flash('관리자 권한이 필요합니다.', 'error')
         return redirect(url_for('admin_login'))
     return None
+
+
 
 # Registration choice route
 @app.route('/register')
