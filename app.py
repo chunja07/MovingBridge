@@ -671,6 +671,10 @@ def register_company():
 def register():
     form = Step1RegisterForm()
     
+    logging.error(f"Form submitted: {request.method == 'POST'}")
+    logging.error(f"Form validation: {form.validate()}")
+    logging.error(f"Form errors: {form.errors}")
+    
     if form.validate_on_submit():
         conn = get_db_connection()
         if not conn:
@@ -715,6 +719,8 @@ def register():
                 
         except Exception as e:
             logging.error(f"Error creating introduction: {e}")
+            logging.error(f"Form errors: {form.errors}")
+            logging.error(f"Form validation: {form.validate()}")
             logging.error(f"Form data: name={form.name.data}, nationality={form.nationality.data}, gender={form.gender.data}")
             logging.error(f"Languages: {form.languages.data}")
             flash('등록 중 오류가 발생했습니다.', 'error')
