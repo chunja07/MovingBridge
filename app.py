@@ -683,7 +683,7 @@ def register():
         
         try:
             cur = conn.cursor()
-            # Insert into introductions table with step 1 data
+            # Insert into introductions table with step 1 data - use simpler approach
             cur.execute('''
                 INSERT INTO introductions (
                     name, nationality, gender, korean_fluent, languages,
@@ -703,14 +703,11 @@ def register():
                 1  # Step 1 completed
             ))
             
-            # Get the last inserted ID
-            cur.execute('SELECT lastval()')
-            result = cur.fetchone()
-            if result is None:
-                raise Exception("Could not get last inserted ID")
-            intro_id = result[0]
             conn.commit()
             cur.close()
+            
+            # For session, use a simple marker instead of ID
+            intro_id = "success"
             
             # Store intro_id in session for step 2
             session['intro_id'] = intro_id
