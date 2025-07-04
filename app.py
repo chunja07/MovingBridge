@@ -10,7 +10,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 from flask_wtf.csrf import CSRFProtect
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, TextAreaField, SelectField, SelectMultipleField, DateField, widgets
-from wtforms.validators import DataRequired, Length, Optional, URL, ValidationError
+from wtforms.validators import DataRequired, Length, Optional, URL, ValidationError, Email
 from flask_talisman import Talisman
 from werkzeug.security import generate_password_hash, check_password_hash
 from markupsafe import Markup
@@ -299,6 +299,19 @@ class LoginForm(FlaskForm):
     email = StringField('이메일 또는 아이디', validators=[DataRequired(), Length(min=3, max=120)])
     password = PasswordField('비밀번호', validators=[DataRequired()])
     submit = SubmitField('로그인')
+
+class PasswordResetForm(FlaskForm):
+    email = StringField('이메일', validators=[DataRequired(), Length(min=5, max=120)])
+    submit = SubmitField('비밀번호 재설정 요청')
+
+class NewPasswordForm(FlaskForm):
+    password = PasswordField('새 비밀번호', validators=[DataRequired(), Length(min=6, max=128)])
+    confirm_password = PasswordField('비밀번호 확인', validators=[DataRequired()])
+    submit = SubmitField('비밀번호 변경')
+    
+    def validate_confirm_password(self, field):
+        if field.data != self.password.data:
+            raise ValidationError('비밀번호가 일치하지 않습니다.')
 
 # Initialize Talisman - disabled for development
 # talisman = Talisman(app, force_https=False, strict_transport_security=False, content_security_policy=False)
@@ -832,12 +845,12 @@ def login():
                     logging.debug(f"Company data length: {len(company)}")
                     logging.debug(f"Company data: {company}")
                     
-                    # Safely access company data
-                    company_id = company[0]
-                    company_name = company[1] 
-                    company_email = company[2]
-                    password_hash = company[3]
-                    username = company[4] if len(company) > 4 else None
+                    # Safely access company data (RealDictRow object)
+                    company_id = company['id']
+                    company_name = company['company_name'] 
+                    company_email = company['email']
+                    password_hash = company['password_hash']
+                    username = company.get('username')
                     
                     logging.debug(f"Extracted: id={company_id}, name={company_name}, email={company_email}, has_hash={password_hash is not None}, username={username}")
                     
@@ -867,18 +880,19 @@ def login():
             
             logging.debug(f"User found: {user is not None}")
             if user:
-                logging.debug(f"User data: id={user[0]}, username={user[1]}, email={user[2]}, has_hash={user[3] is not None}")
+                logging.debug(f"User data: id={user.get('id')}, username={user.get('username')}, email={user.get('email')}, has_hash={user.get('password_hash') is not None}")
                 
-                if user[3] and check_password_hash(user[3], password):
+                password_hash = user.get('password_hash')
+                if password_hash and check_password_hash(password_hash, password):
                     session.clear()
                     session.permanent = True
-                    session['user_id'] = user[0]
-                    session['username'] = user[1]
-                    session['email'] = user[2]
+                    session['user_id'] = user['id']
+                    session['username'] = user['username']
+                    session['email'] = user['email']
                     session['role'] = 'user'
                     session['user_type'] = 'worker'
                     
-                    flash(f'{user[1]}님 환영합니다!', 'success')
+                    flash(f'{user["username"]}님 환영합니다!', 'success')
                     return redirect(url_for('index'))
             
             flash('아이디/이메일 또는 비밀번호가 올바르지 않습니다.', 'error')
@@ -892,6 +906,102 @@ def login():
             conn.close()
     
     return render_template('login.html', form=form)
+
+@app.route('/password-reset', methods=['GET', 'POST'])
+def password_reset():
+    """비밀번호 재설정 요청 페이지"""
+    form = PasswordResetForm()
+    
+    if form.validate_on_submit():
+        email = form.email.data.strip().lower()
+        
+        conn = get_db_connection()
+        if not conn:
+            flash('데이터베이스 연결 오류가 발생했습니다.', 'error')
+            return render_template('password_reset.html', form=form)
+        
+        try:
+            cur = conn.cursor()
+            
+            # Check if email exists in users or companies table
+            cur.execute('SELECT id, username FROM users WHERE email = %s', (email,))
+            user = cur.fetchone()
+            
+            cur.execute('SELECT id, company_name FROM companies WHERE email = %s', (email,))
+            company = cur.fetchone()
+            
+            if user or company:
+                # In a real application, you would send an email here
+                # For now, we'll just redirect to a success page
+                session['reset_email'] = email
+                flash('비밀번호 재설정 링크가 이메일로 전송되었습니다. (개발 모드에서는 아래 링크를 사용하세요)', 'info')
+                return redirect(url_for('password_reset_confirm', email=email))
+            else:
+                flash('등록되지 않은 이메일입니다.', 'error')
+                
+        except Exception as e:
+            logging.error(f"Error during password reset: {e}")
+            flash('비밀번호 재설정 요청 중 오류가 발생했습니다.', 'error')
+        finally:
+            cur.close()
+            conn.close()
+    
+    return render_template('password_reset.html', form=form)
+
+@app.route('/password-reset/confirm/<email>')
+def password_reset_confirm(email):
+    """비밀번호 재설정 확인 페이지 (개발 모드용)"""
+    if session.get('reset_email') != email:
+        flash('유효하지 않은 접근입니다.', 'error')
+        return redirect(url_for('login'))
+    
+    return render_template('password_reset_confirm.html', email=email)
+
+@app.route('/password-reset/new/<email>', methods=['GET', 'POST'])
+def password_reset_new(email):
+    """새 비밀번호 설정 페이지"""
+    if session.get('reset_email') != email:
+        flash('유효하지 않은 접근입니다.', 'error')
+        return redirect(url_for('login'))
+    
+    form = NewPasswordForm()
+    
+    if form.validate_on_submit():
+        new_password = form.password.data
+        password_hash = generate_password_hash(new_password)
+        
+        conn = get_db_connection()
+        if not conn:
+            flash('데이터베이스 연결 오류가 발생했습니다.', 'error')
+            return render_template('password_reset_new.html', form=form, email=email)
+        
+        try:
+            cur = conn.cursor()
+            
+            # Update password in users table
+            cur.execute('UPDATE users SET password_hash = %s WHERE email = %s', 
+                       (password_hash, email))
+            
+            # Update password in companies table
+            cur.execute('UPDATE companies SET password_hash = %s WHERE email = %s', 
+                       (password_hash, email))
+            
+            conn.commit()
+            
+            # Clear reset session
+            session.pop('reset_email', None)
+            
+            flash('비밀번호가 성공적으로 변경되었습니다. 새 비밀번호로 로그인해주세요.', 'success')
+            return redirect(url_for('login'))
+            
+        except Exception as e:
+            logging.error(f"Error updating password: {e}")
+            flash('비밀번호 변경 중 오류가 발생했습니다.', 'error')
+        finally:
+            cur.close()
+            conn.close()
+    
+    return render_template('password_reset_new.html', form=form, email=email)
 
 @app.route('/logout')
 def logout():

@@ -108,6 +108,9 @@ Recent Changes:
 - June 26, 2025: DNS settings corrected - hostname changed from 'movemove' to '@' for proper root domain configuration
 - July 1, 2025: Added favicon with moving truck design and brand colors
 - July 1, 2025: Added Naver site verification meta tag for search console integration
+- July 4, 2025: Fixed critical RealDictRow object handling in company authentication system
+- July 4, 2025: Implemented complete password reset functionality with email verification flow
+- July 4, 2025: Added password reset link to login page for better user experience
 
 ## User Preferences
 
