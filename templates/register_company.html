@@ -59,9 +59,7 @@
                                     <div class="text-danger small">{{ error }}</div>
                                 {% endfor %}
                             </div>
-                        </div>
-
-                        <div class="row">
+                            
                             <div class="col-md-6 mb-3">
                                 {{ form.ceo_name.label(class="form-label") }}
                                 {{ form.ceo_name(class="form-control") }}
@@ -69,7 +67,9 @@
                                     <div class="text-danger small">{{ error }}</div>
                                 {% endfor %}
                             </div>
-                            
+                        </div>
+
+                        <div class="row">
                             <div class="col-md-6 mb-3">
                                 {{ form.contact_number.label(class="form-label") }}
                                 {{ form.contact_number(class="form-control") }}
@@ -77,14 +77,14 @@
                                     <div class="text-danger small">{{ error }}</div>
                                 {% endfor %}
                             </div>
-                        </div>
-
-                        <div class="mb-3">
-                            {{ form.email.label(class="form-label") }}
-                            {{ form.email(class="form-control") }}
-                            {% for error in form.email.errors %}
-                                <div class="text-danger small">{{ error }}</div>
-                            {% endfor %}
+                            
+                            <div class="col-md-6 mb-3">
+                                {{ form.email.label(class="form-label") }}
+                                {{ form.email(class="form-control") }}
+                                {% for error in form.email.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
                         </div>
 
                         <div class="mb-3">
