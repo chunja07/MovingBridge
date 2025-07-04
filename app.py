@@ -828,19 +828,33 @@ def login():
             
             logging.debug(f"Company found: {company is not None}")
             if company:
-                logging.debug(f"Company data: id={company[0]}, name={company[1]}, email={company[2]}, has_hash={company[3] is not None}, username={company[4]}")
-                
-                if company[3] and check_password_hash(company[3], password):
-                    session.clear()
-                    session.permanent = True
-                    session['user_id'] = company[0]
-                    session['username'] = company[4] or company[1]  # Use username or company_name
-                    session['email'] = company[2]
-                    session['role'] = 'company'
-                    session['user_type'] = 'company'
+                try:
+                    logging.debug(f"Company data length: {len(company)}")
+                    logging.debug(f"Company data: {company}")
                     
-                    flash(f'{company[1]} 업체 관리자님 환영합니다!', 'success')
-                    return redirect(url_for('index'))
+                    # Safely access company data
+                    company_id = company[0]
+                    company_name = company[1] 
+                    company_email = company[2]
+                    password_hash = company[3]
+                    username = company[4] if len(company) > 4 else None
+                    
+                    logging.debug(f"Extracted: id={company_id}, name={company_name}, email={company_email}, has_hash={password_hash is not None}, username={username}")
+                    
+                    if password_hash and check_password_hash(password_hash, password):
+                        session.clear()
+                        session.permanent = True
+                        session['user_id'] = company_id
+                        session['username'] = username or company_name
+                        session['email'] = company_email
+                        session['role'] = 'company'
+                        session['user_type'] = 'company'
+                        
+                        flash(f'{company_name} 업체 관리자님 환영합니다!', 'success')
+                        return redirect(url_for('index'))
+                except Exception as company_error:
+                    logging.error(f"Error processing company data: {company_error}")
+                    logging.error(f"Company data: {company}")
             
             # Check users table if not found in companies (for worker accounts)
             logging.debug(f"Checking users table for login_id: {login_id}")
