@@ -818,6 +818,7 @@ def login():
         try:
             cur = conn.cursor()
             # Check companies table first (by email or username)
+            logging.debug(f"Checking companies table for login_id: {login_id}")
             cur.execute('''
                 SELECT id, company_name, email, password_hash, username 
                 FROM companies 
@@ -825,19 +826,24 @@ def login():
             ''', (login_id.lower(), login_id))
             company = cur.fetchone()
             
-            if company and check_password_hash(company[3], password):
-                session.clear()
-                session.permanent = True
-                session['user_id'] = company[0]
-                session['username'] = company[4] or company[1]  # Use username or company_name
-                session['email'] = company[2]
-                session['role'] = 'company'
-                session['user_type'] = 'company'
+            logging.debug(f"Company found: {company is not None}")
+            if company:
+                logging.debug(f"Company data: id={company[0]}, name={company[1]}, email={company[2]}, has_hash={company[3] is not None}, username={company[4]}")
                 
-                flash(f'{company[1]} 업체 관리자님 환영합니다!', 'success')
-                return redirect(url_for('index'))
+                if company[3] and check_password_hash(company[3], password):
+                    session.clear()
+                    session.permanent = True
+                    session['user_id'] = company[0]
+                    session['username'] = company[4] or company[1]  # Use username or company_name
+                    session['email'] = company[2]
+                    session['role'] = 'company'
+                    session['user_type'] = 'company'
+                    
+                    flash(f'{company[1]} 업체 관리자님 환영합니다!', 'success')
+                    return redirect(url_for('index'))
             
             # Check users table if not found in companies (for worker accounts)
+            logging.debug(f"Checking users table for login_id: {login_id}")
             cur.execute('''
                 SELECT id, username, email, password_hash 
                 FROM users 
@@ -845,24 +851,30 @@ def login():
             ''', (login_id.lower(), login_id))
             user = cur.fetchone()
             
-            if user and check_password_hash(user[3], password):
-                session.clear()
-                session.permanent = True
-                session['user_id'] = user[0]
-                session['username'] = user[1]
-                session['email'] = user[2]
-                session['role'] = 'user'
-                session['user_type'] = 'worker'
+            logging.debug(f"User found: {user is not None}")
+            if user:
+                logging.debug(f"User data: id={user[0]}, username={user[1]}, email={user[2]}, has_hash={user[3] is not None}")
                 
-                flash(f'{user[1]}님 환영합니다!', 'success')
-                return redirect(url_for('index'))
-            else:
-                flash('아이디/이메일 또는 비밀번호가 올바르지 않습니다.', 'error')
+                if user[3] and check_password_hash(user[3], password):
+                    session.clear()
+                    session.permanent = True
+                    session['user_id'] = user[0]
+                    session['username'] = user[1]
+                    session['email'] = user[2]
+                    session['role'] = 'user'
+                    session['user_type'] = 'worker'
+                    
+                    flash(f'{user[1]}님 환영합니다!', 'success')
+                    return redirect(url_for('index'))
+            
+            flash('아이디/이메일 또는 비밀번호가 올바르지 않습니다.', 'error')
         except Exception as e:
             logging.error(f"Error during login: {e}")
+            logging.error(f"Login attempt with: {login_id}")
             flash('로그인 중 오류가 발생했습니다.', 'error')
         finally:
-            cur.close()
+            if 'cur' in locals():
+                cur.close()
             conn.close()
     
     return render_template('login.html', form=form)
