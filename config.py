@@ -33,6 +33,7 @@ class DevelopmentConfig(Config):
     # Disable HTTPS enforcement for development
     WTF_CSRF_SSL_STRICT = False
     SESSION_COOKIE_SECURE = False
+    WTF_CSRF_ENABLED = False  # Disable CSRF for development
     
     # More lenient CSP for development
     TALISMAN_CONFIG = {
