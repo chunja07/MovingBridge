@@ -494,6 +494,7 @@ def intro_list():
                 'languages': intro['languages'],
                 'introduction': intro['introduction'],
                 'created_at': intro['created_at'],
+                'timestamp': intro['created_at'],  # Add timestamp for compatibility
                 'gender': intro['gender'],
                 'korean_fluent': intro['korean_fluent'],
                 'preferred_jobs': intro['preferred_jobs'],
@@ -540,6 +541,7 @@ def intro_view(intro_id):
             'languages': intro_data['languages'],
             'introduction': intro_data['introduction'],
             'created_at': intro_data['created_at'],
+            'timestamp': intro_data['created_at'],  # Add timestamp for compatibility
             'gender': intro_data['gender'],
             'korean_fluent': intro_data['korean_fluent'],
             'preferred_jobs': intro_data['preferred_jobs'],
@@ -1235,8 +1237,47 @@ def admin_intros():
     if auth_check:
         return auth_check
     
-    sorted_intros = sorted(intro_posts.items(), key=lambda x: x[1]['timestamp'], reverse=True)
-    return render_template('admin_intros.html', intro_posts=sorted_intros)
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        
+        cur.execute("""
+            SELECT id, name, nationality, languages, introduction, created_at, 
+                   gender, korean_fluent, preferred_jobs, preferred_location, 
+                   availability, youtube_link, video_link
+            FROM introductions 
+            ORDER BY created_at DESC
+        """)
+        
+        introductions = cur.fetchall()
+        cur.close()
+        conn.close()
+        
+        # Convert to format expected by admin template
+        intro_posts_data = []
+        for intro in introductions:
+            intro_data = {
+                'id': intro['id'],
+                'name': intro['name'],
+                'nationality': intro['nationality'],
+                'languages': intro['languages'],
+                'introduction': intro['introduction'],
+                'created_at': intro['created_at'],
+                'timestamp': intro['created_at'],
+                'gender': intro['gender'],
+                'korean_fluent': intro['korean_fluent'],
+                'preferred_jobs': intro['preferred_jobs'],
+                'preferred_location': intro['preferred_location'],
+                'availability': intro['availability'],
+                'youtube_link': intro['youtube_link'] or intro['video_link']
+            }
+            intro_posts_data.append((intro['id'], intro_data))
+        
+        return render_template('admin_intros.html', intro_posts=intro_posts_data)
+        
+    except Exception as e:
+        logging.error(f"Error fetching introductions for admin: {e}")
+        return render_template('admin_intros.html', intro_posts=[])
 
 @app.route('/admin/intros/<int:intro_id>/delete', methods=['POST'])
 def admin_delete_intro(intro_id):
@@ -1244,11 +1285,29 @@ def admin_delete_intro(intro_id):
     if auth_check:
         return auth_check
     
-    if intro_id in intro_posts:
-        del intro_posts[intro_id]
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        # Check if introduction exists
+        cur.execute("SELECT id FROM introductions WHERE id = %s", (intro_id,))
+        if not cur.fetchone():
+            flash('존재하지 않는 자기소개입니다.', 'error')
+            cur.close()
+            conn.close()
+            return redirect(url_for('admin_intros'))
+        
+        # Delete the introduction
+        cur.execute("DELETE FROM introductions WHERE id = %s", (intro_id,))
+        conn.commit()
+        cur.close()
+        conn.close()
+        
         flash('자기소개가 삭제되었습니다.', 'success')
-    else:
-        flash('존재하지 않는 자기소개입니다.', 'error')
+        
+    except Exception as e:
+        logging.error(f"Error deleting introduction {intro_id}: {e}")
+        flash('자기소개 삭제 중 오류가 발생했습니다.', 'error')
     
     return redirect(url_for('admin_intros'))
 
