@@ -398,44 +398,119 @@ def health_check():
 def job_new():
     """Page for companies to create new job postings"""
     if request.method == 'POST':
-        global job_counter
-        job_counter += 1
-        
-        job_data = {
-            'id': job_counter,
-            'title': sanitize_input(request.form.get('title', '')),
-            'company': sanitize_input(request.form.get('company', '')),
-            'contact': sanitize_input(request.form.get('contact', '')),
-            'description': sanitize_input(request.form.get('description', '')),
-            'timestamp': datetime.now()
-        }
-        
-        # Basic validation
-        if not all([job_data['title'], job_data['company'], job_data['contact'], job_data['description']]):
-            flash('모든 필드를 입력해주세요.', 'error')
+        try:
+            title = sanitize_input(request.form.get('title', ''))
+            company = sanitize_input(request.form.get('company', ''))
+            contact = sanitize_input(request.form.get('contact', ''))
+            description = sanitize_input(request.form.get('description', ''))
+            
+            # Basic validation
+            if not all([title, company, contact, description]):
+                flash('모든 필드를 입력해주세요.', 'error')
+                return render_template('job_new.html')
+            
+            # Save to database
+            conn = get_db_connection()
+            cur = conn.cursor()
+            
+            cur.execute("""
+                INSERT INTO jobs (title, company, contact, description, created_at, company_id)
+                VALUES (%s, %s, %s, %s, %s, %s)
+                RETURNING id
+            """, (title, company, contact, description, datetime.now(), session.get('company_id')))
+            
+            job_id = cur.fetchone()[0]
+            conn.commit()
+            cur.close()
+            conn.close()
+            
+            flash('구인공고가 성공적으로 등록되었습니다.', 'success')
+            return redirect(url_for('job_view', job_id=job_id))
+            
+        except Exception as e:
+            logging.error(f"Error creating job post: {e}")
+            flash('구인공고 등록 중 오류가 발생했습니다.', 'error')
             return render_template('job_new.html')
-        
-        job_posts[job_counter] = job_data
-        flash('구인공고가 성공적으로 등록되었습니다.', 'success')
-        return redirect(url_for('job_view', job_id=job_counter))
     
     return render_template('job_new.html')
 
 @app.route('/job')
 def job_list():
     """Page displaying all job postings"""
-    sorted_jobs = sorted(job_posts.items(), key=lambda x: x[1]['timestamp'], reverse=True)
-    return render_template('job_list.html', job_posts=sorted_jobs)
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        
+        cur.execute("""
+            SELECT id, title, company, contact, description, created_at, company_id
+            FROM jobs 
+            ORDER BY created_at DESC
+        """)
+        
+        jobs = cur.fetchall()
+        cur.close()
+        conn.close()
+        
+        # Convert to format expected by template
+        job_posts_data = []
+        for job in jobs:
+            job_data = {
+                'id': job['id'],
+                'title': job['title'],
+                'company': job['company'],
+                'contact': job['contact'],
+                'description': job['description'],
+                'created_at': job['created_at'],
+                'timestamp': job['created_at'],
+                'company_id': job['company_id']
+            }
+            job_posts_data.append((job['id'], job_data))
+        
+        return render_template('job_list.html', job_posts=job_posts_data)
+        
+    except Exception as e:
+        logging.error(f"Error fetching jobs: {e}")
+        return render_template('job_list.html', job_posts=[])
 
 @app.route('/job/<int:job_id>')
 def job_view(job_id):
     """Page to view a specific job posting"""
-    if job_id not in job_posts:
-        flash('존재하지 않는 구인공고입니다.', 'error')
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        
+        cur.execute("""
+            SELECT id, title, company, contact, description, created_at, company_id
+            FROM jobs 
+            WHERE id = %s
+        """, (job_id,))
+        
+        job_data = cur.fetchone()
+        cur.close()
+        conn.close()
+        
+        if not job_data:
+            flash('존재하지 않는 구인공고입니다.', 'error')
+            return redirect(url_for('job_list'))
+        
+        # Convert to format expected by template
+        job = {
+            'id': job_data['id'],
+            'title': job_data['title'],
+            'company': job_data['company'],
+            'contact': job_data['contact'],
+            'description': job_data['description'],
+            'created_at': job_data['created_at'],
+            'timestamp': job_data['created_at'],
+            'company_id': job_data['company_id']
+        }
+        
+        return render_template('job_view.html', job=job)
+        
+    except Exception as e:
+        logging.error(f"Error fetching job {job_id}: {e}")
+        flash('구인공고를 불러오는 중 오류가 발생했습니다.', 'error')
         return redirect(url_for('job_list'))
-    
-    job = job_posts[job_id]
-    return render_template('job_view.html', job=job)
 
 @app.route('/intro/new', methods=['GET', 'POST'])
 def intro_new():
@@ -1214,8 +1289,40 @@ def admin_jobs():
     if auth_check:
         return auth_check
     
-    sorted_jobs = sorted(job_posts.items(), key=lambda x: x[1]['timestamp'], reverse=True)
-    return render_template('admin_jobs.html', job_posts=sorted_jobs)
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        
+        cur.execute("""
+            SELECT id, title, company, contact, description, created_at, company_id
+            FROM jobs 
+            ORDER BY created_at DESC
+        """)
+        
+        jobs = cur.fetchall()
+        cur.close()
+        conn.close()
+        
+        # Convert to format expected by admin template
+        job_posts_data = []
+        for job in jobs:
+            job_data = {
+                'id': job['id'],
+                'title': job['title'],
+                'company': job['company'],
+                'contact': job['contact'],
+                'description': job['description'],
+                'created_at': job['created_at'],
+                'timestamp': job['created_at'],
+                'company_id': job['company_id']
+            }
+            job_posts_data.append((job['id'], job_data))
+        
+        return render_template('admin_jobs.html', job_posts=job_posts_data)
+        
+    except Exception as e:
+        logging.error(f"Error fetching jobs for admin: {e}")
+        return render_template('admin_jobs.html', job_posts=[])
 
 @app.route('/admin/jobs/<int:job_id>/delete', methods=['POST'])
 @csrf.exempt
@@ -1224,11 +1331,29 @@ def admin_delete_job(job_id):
     if auth_check:
         return auth_check
     
-    if job_id in job_posts:
-        del job_posts[job_id]
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        # Check if job exists
+        cur.execute("SELECT id FROM jobs WHERE id = %s", (job_id,))
+        if not cur.fetchone():
+            flash('존재하지 않는 채용공고입니다.', 'error')
+            cur.close()
+            conn.close()
+            return redirect(url_for('admin_jobs'))
+        
+        # Delete the job
+        cur.execute("DELETE FROM jobs WHERE id = %s", (job_id,))
+        conn.commit()
+        cur.close()
+        conn.close()
+        
         flash('채용공고가 삭제되었습니다.', 'success')
-    else:
-        flash('존재하지 않는 채용공고입니다.', 'error')
+        
+    except Exception as e:
+        logging.error(f"Error deleting job {job_id}: {e}")
+        flash('채용공고 삭제 중 오류가 발생했습니다.', 'error')
     
     return redirect(url_for('admin_jobs'))
 
