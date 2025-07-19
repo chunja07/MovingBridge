@@ -468,18 +468,92 @@ def intro_new():
 @app.route('/intro')
 def intro_list():
     """Page displaying all self-introductions"""
-    sorted_intros = sorted(intro_posts.items(), key=lambda x: x[1]['timestamp'], reverse=True)
-    return render_template('intro_list.html', intro_posts=sorted_intros)
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        
+        cur.execute("""
+            SELECT id, name, nationality, languages, introduction, created_at, 
+                   gender, korean_fluent, preferred_jobs, preferred_location, 
+                   availability, youtube_link, video_link
+            FROM introductions 
+            ORDER BY created_at DESC
+        """)
+        
+        introductions = cur.fetchall()
+        cur.close()
+        conn.close()
+        
+        # Convert to format similar to original intro_posts structure
+        intro_posts_data = []
+        for intro in introductions:
+            intro_data = {
+                'id': intro['id'],
+                'name': intro['name'],
+                'nationality': intro['nationality'],
+                'languages': intro['languages'],
+                'introduction': intro['introduction'],
+                'created_at': intro['created_at'],
+                'gender': intro['gender'],
+                'korean_fluent': intro['korean_fluent'],
+                'preferred_jobs': intro['preferred_jobs'],
+                'preferred_location': intro['preferred_location'],
+                'availability': intro['availability'],
+                'youtube_link': intro['youtube_link'] or intro['video_link']
+            }
+            intro_posts_data.append((intro['id'], intro_data))
+        
+        return render_template('intro_list.html', intro_posts=intro_posts_data)
+        
+    except Exception as e:
+        logging.error(f"Error fetching introductions: {e}")
+        return render_template('intro_list.html', intro_posts=[])
 
 @app.route('/intro/<int:intro_id>')
 def intro_view(intro_id):
     """Page to view a specific self-introduction"""
-    if intro_id not in intro_posts:
-        flash('존재하지 않는 자기소개입니다.', 'error')
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        
+        cur.execute("""
+            SELECT id, name, nationality, languages, introduction, created_at, 
+                   gender, korean_fluent, preferred_jobs, preferred_location, 
+                   availability, youtube_link, video_link
+            FROM introductions 
+            WHERE id = %s
+        """, (intro_id,))
+        
+        intro_data = cur.fetchone()
+        cur.close()
+        conn.close()
+        
+        if not intro_data:
+            flash('존재하지 않는 자기소개입니다.', 'error')
+            return redirect(url_for('intro_list'))
+        
+        # Convert to format expected by template
+        intro = {
+            'id': intro_data['id'],
+            'name': intro_data['name'],
+            'nationality': intro_data['nationality'],
+            'languages': intro_data['languages'],
+            'introduction': intro_data['introduction'],
+            'created_at': intro_data['created_at'],
+            'gender': intro_data['gender'],
+            'korean_fluent': intro_data['korean_fluent'],
+            'preferred_jobs': intro_data['preferred_jobs'],
+            'preferred_location': intro_data['preferred_location'],
+            'availability': intro_data['availability'],
+            'youtube_link': intro_data['youtube_link'] or intro_data['video_link']
+        }
+        
+        return render_template('intro_view.html', intro=intro)
+        
+    except Exception as e:
+        logging.error(f"Error fetching introduction {intro_id}: {e}")
+        flash('자기소개를 불러오는 중 오류가 발생했습니다.', 'error')
         return redirect(url_for('intro_list'))
-    
-    intro = intro_posts[intro_id]
-    return render_template('intro_view.html', intro=intro)
 
 # Notice routes
 @app.route('/notice')
