@@ -1218,6 +1218,7 @@ def admin_jobs():
     return render_template('admin_jobs.html', job_posts=sorted_jobs)
 
 @app.route('/admin/jobs/<int:job_id>/delete', methods=['POST'])
+@csrf.exempt
 def admin_delete_job(job_id):
     auth_check = require_admin()
     if auth_check:
@@ -1280,6 +1281,7 @@ def admin_intros():
         return render_template('admin_intros.html', intro_posts=[])
 
 @app.route('/admin/intros/<int:intro_id>/delete', methods=['POST'])
+@csrf.exempt
 def admin_delete_intro(intro_id):
     auth_check = require_admin()
     if auth_check:
@@ -1321,6 +1323,7 @@ def admin_notices():
     return render_template('admin_notices.html', notice_posts=sorted_notices)
 
 @app.route('/admin/notices/<int:notice_id>/delete', methods=['POST'])
+@csrf.exempt
 def admin_delete_notice(notice_id):
     auth_check = require_admin()
     if auth_check:
@@ -1344,6 +1347,7 @@ def admin_forums():
     return render_template('admin_forums.html', forum_posts=sorted_forums)
 
 @app.route('/admin/forums/<int:forum_id>/delete', methods=['POST'])
+@csrf.exempt
 def admin_delete_forum(forum_id):
     auth_check = require_admin()
     if auth_check:
