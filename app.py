@@ -398,7 +398,7 @@ def health_check():
 def job_new():
     """Page for companies to create new job postings"""
     # Check if user is logged in
-    login_check = require_login()
+    login_check = require_login_new()
     if login_check:
         return login_check
         
@@ -521,7 +521,7 @@ def job_view(job_id):
 def intro_new():
     """Page for foreign workers to create self-introductions"""
     # Check if user is logged in
-    login_check = require_login()
+    login_check = require_login_new()
     if login_check:
         return login_check
         
@@ -817,7 +817,15 @@ def require_admin():
         return redirect(url_for('admin_login'))
     return None
 
-def require_login():
+def is_company_logged_in():
+    """Check if company is logged in"""
+    return session.get('user_type') == 'company' and 'company_id' in session
+
+def is_worker_logged_in():
+    """Check if worker is logged in"""
+    return session.get('user_type') == 'worker' and 'user_id' in session
+
+def require_login_new():
     """Check if user is logged in (either as company or worker)"""
     if not (is_company_logged_in() or is_worker_logged_in()):
         flash('로그인이 필요합니다.', 'error')
