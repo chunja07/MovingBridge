@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from flask_wtf.csrf import CSRFProtect
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, TextAreaField, SelectField, SelectMultipleField, DateField, widgets
+from wtforms import StringField, PasswordField, SubmitField, TextAreaField, SelectField, SelectMultipleField, DateField, BooleanField, widgets
 from wtforms.validators import DataRequired, Length, Optional, URL, ValidationError, Email
 from flask_talisman import Talisman
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -203,6 +203,8 @@ class Step1RegisterForm(FlaskForm):
     ], validators=[DataRequired()])
     self_intro = TextAreaField('자기소개', validators=[DataRequired(), Length(min=10, max=1000)])
     video_link = StringField('자기소개 영상 링크 (선택)', validators=[Optional(), URL()])
+    privacy_agreement = BooleanField('개인정보 수집·이용에 동의합니다', validators=[DataRequired()])
+    terms_agreement = BooleanField('이용약관에 동의합니다', validators=[DataRequired()])
     submit = SubmitField('등록하기')
 
 class Step2RegisterForm(FlaskForm):
@@ -270,6 +272,8 @@ class CompanyRegisterForm(FlaskForm):
     confirm_password = PasswordField('비밀번호 확인', validators=[DataRequired()])
     address = StringField('회사 주소', validators=[DataRequired(), Length(min=5, max=200)])
     company_description = TextAreaField('회사 소개', validators=[Optional(), Length(max=500)])
+    privacy_agreement = BooleanField('개인정보 수집·이용에 동의합니다', validators=[DataRequired()])
+    terms_agreement = BooleanField('이용약관에 동의합니다', validators=[DataRequired()])
     submit = SubmitField('회원가입')
     
     def validate_confirm_password(self, field):

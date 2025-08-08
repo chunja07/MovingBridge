@@ -103,6 +103,49 @@
                             {% endfor %}
                         </div>
 
+                        <!-- 개인정보 동의 섹션 -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h6 class="mb-0">개인정보 수집·이용 동의</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="privacy-text mb-3" style="max-height: 150px; overflow-y: auto; font-size: 0.9em; background-color: #f8f9fa; padding: 10px; border-radius: 5px;">
+                                    <strong>개인정보 수집·이용 목적:</strong><br>
+                                    - 회원 가입 및 관리<br>
+                                    - 서비스 제공 및 업무처리<br>
+                                    - 이사업체와 구직자 매칭 서비스<br>
+                                    - 고객 상담 및 불만처리<br><br>
+                                    
+                                    <strong>수집하는 개인정보 항목:</strong><br>
+                                    - 회사명, 사업자등록번호, 대표자명<br>
+                                    - 연락처, 이메일, 회사주소<br>
+                                    - 아이디, 비밀번호<br><br>
+                                    
+                                    <strong>개인정보 보유·이용 기간:</strong><br>
+                                    - 회원 탈퇴 시까지 또는 법정 보유기간<br><br>
+                                    
+                                    <strong>동의 거부권:</strong><br>
+                                    개인정보 수집·이용에 대한 동의를 거부할 권리가 있으나, 동의 거부 시 서비스 이용이 제한될 수 있습니다.
+                                </div>
+                                
+                                <div class="form-check mb-2">
+                                    {{ form.privacy_agreement(class="form-check-input") }}
+                                    {{ form.privacy_agreement.label(class="form-check-label") }}
+                                    {% for error in form.privacy_agreement.errors %}
+                                        <div class="text-danger small">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                                
+                                <div class="form-check">
+                                    {{ form.terms_agreement(class="form-check-input") }}
+                                    {{ form.terms_agreement.label(class="form-check-label") }}
+                                    {% for error in form.terms_agreement.errors %}
+                                        <div class="text-danger small">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="d-grid">
                             {{ form.submit(class="btn btn-primary btn-lg") }}
                         </div>
