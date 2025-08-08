@@ -111,6 +111,8 @@ Recent Changes:
 - July 4, 2025: Fixed critical RealDictRow object handling in company authentication system
 - July 4, 2025: Implemented complete password reset functionality with email verification flow
 - July 4, 2025: Added password reset link to login page for better user experience
+- August 8, 2025: Added login requirement for posting in self-introduction and job posting boards
+- August 8, 2025: Implemented require_login() function to protect content creation routes
 
 ## User Preferences
 

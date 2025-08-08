@@ -397,6 +397,11 @@ def health_check():
 @app.route('/job/new', methods=['GET', 'POST'])
 def job_new():
     """Page for companies to create new job postings"""
+    # Check if user is logged in
+    login_check = require_login()
+    if login_check:
+        return login_check
+        
     if request.method == 'POST':
         try:
             title = sanitize_input(request.form.get('title', ''))
@@ -515,6 +520,11 @@ def job_view(job_id):
 @app.route('/intro/new', methods=['GET', 'POST'])
 def intro_new():
     """Page for foreign workers to create self-introductions"""
+    # Check if user is logged in
+    login_check = require_login()
+    if login_check:
+        return login_check
+        
     if request.method == 'POST':
         global intro_counter
         intro_counter += 1
@@ -805,6 +815,13 @@ def require_admin():
     if not admin_status:
         flash('관리자 권한이 필요합니다.', 'error')
         return redirect(url_for('admin_login'))
+    return None
+
+def require_login():
+    """Check if user is logged in (either as company or worker)"""
+    if not (is_company_logged_in() or is_worker_logged_in()):
+        flash('로그인이 필요합니다.', 'error')
+        return redirect(url_for('login'))
     return None
 
 
