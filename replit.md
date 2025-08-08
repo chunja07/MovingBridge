@@ -113,6 +113,8 @@ Recent Changes:
 - July 4, 2025: Added password reset link to login page for better user experience
 - August 8, 2025: Added login requirement for posting in self-introduction and job posting boards
 - August 8, 2025: Implemented require_login() function to protect content creation routes
+- August 8, 2025: Added comprehensive privacy policy agreement checkboxes to registration forms
+- August 8, 2025: Enhanced privacy policy with specific data collection, usage, and retention periods (5 years for companies, 3 years for workers)
 
 ## User Preferences
 
