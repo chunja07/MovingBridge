@@ -268,13 +268,20 @@ document.querySelector('form').addEventListener('submit', function(e) {
             checkCompanyUsernameBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> 확인중...';
             companyResultDiv.innerHTML = '';
             
+            // CSRF 토큰 가져오기
+            const csrfToken = document.querySelector('input[name="csrf_token"]').value;
+            
             // AJAX 요청
             fetch('/check_username', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
                 },
-                body: JSON.stringify({ username: username })
+                body: JSON.stringify({ 
+                    username: username,
+                    csrf_token: csrfToken
+                })
             })
             .then(response => response.json())
             .then(data => {

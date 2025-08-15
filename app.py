@@ -1132,8 +1132,11 @@ def register():
 @app.route('/check_username', methods=['POST'])
 def check_username():
     """API endpoint to check if username is available"""
-    data = request.get_json()
-    username = data.get('username', '').strip()
+    try:
+        data = request.get_json()
+        username = data.get('username', '').strip() if data else ''
+    except:
+        return jsonify({'available': False, 'message': '잘못된 요청입니다.'})
     
     if not username:
         return jsonify({'available': False, 'message': '사용자명을 입력해주세요.'})
