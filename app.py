@@ -925,7 +925,7 @@ def register():
             return render_template('register.html', form=form)
         
         try:
-            cur = conn.cursor()
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
             
             # First, create user account in users table
             password_hash = generate_password_hash(form.password.data)
@@ -943,6 +943,7 @@ def register():
             
             user_result = cur.fetchone()
             user_id = user_result[0] if user_result else None
+            logging.debug(f"Created user with ID: {user_id}")
             
             if user_id is None:
                 raise Exception("Failed to create user account")
@@ -969,18 +970,17 @@ def register():
                 1  # Step 1 completed
             ))
             
-            # Try to get the ID with proper error handling
-            try:
+            # Get the introduction ID
+            result = cur.fetchone()
+            intro_id = result[0] if result else None
+            logging.debug(f"Got intro_id from RETURNING: {intro_id}")
+            
+            if intro_id is None or intro_id == 0:
+                # Fallback method
+                cur.execute('SELECT MAX(id) FROM introductions WHERE user_id = %s', (user_id,))
                 result = cur.fetchone()
                 intro_id = result[0] if result else None
-                logging.debug(f"Got intro_id from RETURNING: {intro_id}")
-            except Exception as e:
-                logging.debug(f"RETURNING failed: {e}")
-                # If RETURNING doesn't work, get the max ID
-                cur.execute('SELECT MAX(id) FROM introductions WHERE name = %s', (form.name.data,))
-                result = cur.fetchone()
-                intro_id = result[0] if result else None
-                logging.debug(f"Got intro_id from MAX: {intro_id}")
+                logging.debug(f"Got intro_id from MAX fallback: {intro_id}")
             
             conn.commit()
             cur.close()
@@ -999,10 +999,20 @@ def register():
             logging.error(f"Form validation: {form.validate()}")
             logging.error(f"Form data: name={form.name.data}, nationality={form.nationality.data}, gender={form.gender.data}")
             logging.error(f"Languages: {form.languages.data}")
-            flash('등록 중 오류가 발생했습니다.', 'error')
+            
+            # Rollback the transaction
+            try:
+                conn.rollback()
+            except:
+                pass
+                
+            flash('등록 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', 'error')
             return render_template('register.html', form=form)
         finally:
-            conn.close()
+            try:
+                conn.close()
+            except:
+                pass
     
     return render_template('register.html', form=form)
 
