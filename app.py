@@ -973,17 +973,20 @@ def register():
             try:
                 result = cur.fetchone()
                 intro_id = result[0] if result else None
-            except:
+                logging.debug(f"Got intro_id from RETURNING: {intro_id}")
+            except Exception as e:
+                logging.debug(f"RETURNING failed: {e}")
                 # If RETURNING doesn't work, get the max ID
                 cur.execute('SELECT MAX(id) FROM introductions WHERE name = %s', (form.name.data,))
                 result = cur.fetchone()
                 intro_id = result[0] if result else None
+                logging.debug(f"Got intro_id from MAX: {intro_id}")
             
             conn.commit()
             cur.close()
             
-            if intro_id is None:
-                raise Exception("Could not get introduction ID")
+            if intro_id is None or intro_id == 0:
+                raise Exception(f"Could not get introduction ID, got: {intro_id}")
             
             # Store intro_id in session for step 2
             session['intro_id'] = intro_id
