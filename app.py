@@ -929,13 +929,15 @@ def register():
             
             # First, create user account in users table
             password_hash = generate_password_hash(form.password.data)
+            logging.debug(f"Creating user with password hash: {password_hash[:20]}...")
             cur.execute('''
-                INSERT INTO users (username, email, password_hash, name) 
-                VALUES (%s, %s, %s, %s) RETURNING id
+                INSERT INTO users (username, email, password, password_hash, name) 
+                VALUES (%s, %s, %s, %s, %s) RETURNING id
             ''', (
                 form.username.data,
                 form.email.data.lower(),
-                password_hash,
+                password_hash,  # password 필드에도 해시 저장 (호환성)
+                password_hash,  # password_hash 필드에 해시 저장
                 form.name.data
             ))
             
