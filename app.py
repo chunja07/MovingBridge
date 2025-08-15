@@ -1033,6 +1033,48 @@ def register():
     
     return render_template('register.html', form=form)
 
+@app.route('/check_username', methods=['POST'])
+def check_username():
+    """API endpoint to check if username is available"""
+    data = request.get_json()
+    username = data.get('username', '').strip()
+    
+    if not username:
+        return jsonify({'available': False, 'message': '사용자명을 입력해주세요.'})
+    
+    if len(username) < 3:
+        return jsonify({'available': False, 'message': '사용자명은 3자 이상이어야 합니다.'})
+    
+    conn = get_db_connection()
+    if not conn:
+        return jsonify({'available': False, 'message': '데이터베이스 연결 오류'})
+    
+    try:
+        cur = conn.cursor()
+        # Check if username exists in both users and companies tables
+        cur.execute('SELECT username FROM users WHERE username = %s', (username,))
+        user_exists = cur.fetchone()
+        
+        cur.execute('SELECT username FROM companies WHERE username = %s', (username,))
+        company_exists = cur.fetchone()
+        
+        cur.close()
+        conn.close()
+        
+        if user_exists or company_exists:
+            return jsonify({'available': False, 'message': '이미 사용 중인 사용자명입니다.'})
+        else:
+            return jsonify({'available': True, 'message': '사용 가능한 사용자명입니다.'})
+    
+    except Exception as e:
+        logging.error(f"Error checking username: {e}")
+        return jsonify({'available': False, 'message': '확인 중 오류가 발생했습니다.'})
+    finally:
+        try:
+            conn.close()
+        except:
+            pass
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()

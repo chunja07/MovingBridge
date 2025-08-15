@@ -31,7 +31,11 @@
                             </div>
                             <div class="col-md-6 mb-3">
                                 {{ form.username.label(class="form-label") }}
-                                {{ form.username(class="form-control") }}
+                                <div class="input-group">
+                                    {{ form.username(class="form-control", id="username_field") }}
+                                    <button type="button" class="btn btn-outline-primary" id="check_username_btn">중복확인</button>
+                                </div>
+                                <div id="username_check_result" class="small mt-1"></div>
                                 {% for error in form.username.errors %}
                                     <div class="text-danger small">{{ error }}</div>
                                 {% endfor %}
@@ -210,4 +214,62 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const checkUsernameBtn = document.getElementById('check_username_btn');
+    const usernameField = document.getElementById('username_field');
+    const resultDiv = document.getElementById('username_check_result');
+    
+    checkUsernameBtn.addEventListener('click', function() {
+        const username = usernameField.value.trim();
+        
+        if (!username) {
+            resultDiv.innerHTML = '<span class="text-warning">사용자명을 입력해주세요.</span>';
+            return;
+        }
+        
+        if (username.length < 3) {
+            resultDiv.innerHTML = '<span class="text-warning">사용자명은 3자 이상이어야 합니다.</span>';
+            return;
+        }
+        
+        // 버튼 비활성화 및 로딩 표시
+        checkUsernameBtn.disabled = true;
+        checkUsernameBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> 확인중...';
+        resultDiv.innerHTML = '';
+        
+        // AJAX 요청
+        fetch('/check_username', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ username: username })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.available) {
+                resultDiv.innerHTML = '<span class="text-success"><i class="fas fa-check-circle"></i> ' + data.message + '</span>';
+            } else {
+                resultDiv.innerHTML = '<span class="text-danger"><i class="fas fa-times-circle"></i> ' + data.message + '</span>';
+            }
+        })
+        .catch(error => {
+            resultDiv.innerHTML = '<span class="text-danger">확인 중 오류가 발생했습니다.</span>';
+        })
+        .finally(() => {
+            // 버튼 원상복구
+            checkUsernameBtn.disabled = false;
+            checkUsernameBtn.innerHTML = '중복확인';
+        });
+    });
+    
+    // 사용자명이 변경되면 결과 초기화
+    usernameField.addEventListener('input', function() {
+        resultDiv.innerHTML = '';
+    });
+});
+</script>
+
 {% endblock %}
