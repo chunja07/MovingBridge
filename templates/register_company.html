@@ -219,11 +219,15 @@ function formatPhoneNumber(input) {
 
 // 페이지 로드 시 연락처 필드에 이벤트 리스너 추가
 document.addEventListener('DOMContentLoaded', function() {
-    const contactInput = document.getElementById('contact_number');
+    // WTForms가 생성한 실제 ID를 사용
+    const contactInput = document.querySelector('input[name="contact_number"]');
     if (contactInput) {
         contactInput.addEventListener('input', function() {
             formatPhoneNumber(this);
         });
+        console.log('전화번호 포맷팅 이벤트 리스너 추가됨');
+    } else {
+        console.log('연락처 필드를 찾을 수 없음');
     }
 });
 
