@@ -76,7 +76,7 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 {{ form.contact_number.label(class="form-label") }}
-                                {{ form.contact_number(class="form-control", placeholder="010-0000-0000", maxlength="13", oninput="formatPhoneNumber(this)") }}
+                                {{ form.contact_number(class="form-control", placeholder="010-0000-0000", maxlength="13", id="contact_number_input") }}
                                 {% for error in form.contact_number.errors %}
                                     <div class="text-danger small">{{ error }}</div>
                                 {% endfor %}
@@ -216,6 +216,16 @@ function formatPhoneNumber(input) {
         input.value = value.slice(0, 3) + '-' + value.slice(3, 7) + '-' + value.slice(7, 11);
     }
 }
+
+// 페이지 로드 시 연락처 필드에 이벤트 리스너 추가
+document.addEventListener('DOMContentLoaded', function() {
+    const contactInput = document.getElementById('contact_number');
+    if (contactInput) {
+        contactInput.addEventListener('input', function() {
+            formatPhoneNumber(this);
+        });
+    }
+});
 
 // 폼 제출 시 전체 주소 조합
 document.querySelector('form').addEventListener('submit', function(e) {
