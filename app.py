@@ -823,7 +823,7 @@ def require_admin():
 
 def is_company_logged_in():
     """Check if company is logged in"""
-    return session.get('user_type') == 'company' and 'company_id' in session
+    return session.get('user_type') == 'company' and 'user_id' in session
 
 def is_worker_logged_in():
     """Check if worker is logged in"""
@@ -1044,6 +1044,7 @@ def login():
                         session.clear()
                         session.permanent = True
                         session['user_id'] = company_id
+                        session['company_id'] = company_id  # 호환성을 위해 company_id도 저장
                         session['username'] = username or company_name
                         session['email'] = company_email
                         session['role'] = 'company'
