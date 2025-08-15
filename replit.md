@@ -115,6 +115,9 @@ Recent Changes:
 - August 8, 2025: Implemented require_login() function to protect content creation routes
 - August 8, 2025: Added comprehensive privacy policy agreement checkboxes to registration forms
 - August 8, 2025: Enhanced privacy policy with specific data collection, usage, and retention periods (5 years for companies, 3 years for workers)
+- August 15, 2025: Fixed critical login state verification bug - companies can now access job posting features after login
+- August 15, 2025: Implemented automatic phone number formatting (010-1234-5678) in company registration form
+- August 15, 2025: Integrated Daum postal code API for automated address search in company registration
 
 ## User Preferences
 
