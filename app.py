@@ -854,6 +854,48 @@ def register_choice():
 def register_company():
     form = CompanyRegisterForm()
     
+    # 폼이 제출되었지만 검증에 실패했을 때 상세한 오류 메시지 제공
+    if request.method == 'POST' and not form.validate():
+        error_messages = []
+        
+        if form.company_name.errors:
+            error_messages.append('회사명을 입력해주세요.')
+        
+        if form.username.errors:
+            error_messages.append('사용자명을 올바르게 입력해주세요.')
+        
+        if form.password.errors or form.confirm_password.errors:
+            error_messages.append('비밀번호를 올바르게 입력하고 확인해주세요.')
+        
+        if form.business_number.errors:
+            error_messages.append('사업자등록번호를 올바르게 입력해주세요.')
+        
+        if form.ceo_name.errors:
+            error_messages.append('대표자명을 입력해주세요.')
+        
+        if form.contact_number.errors:
+            error_messages.append('연락처를 올바르게 입력해주세요.')
+        
+        if form.email.errors:
+            error_messages.append('이메일 주소를 올바르게 입력해주세요.')
+        
+        if form.address.errors:
+            error_messages.append('주소를 입력해주세요.')
+        
+        if form.company_description.errors:
+            error_messages.append('회사 설명을 입력해주세요.')
+        
+        if form.privacy_agreement.errors or form.terms_agreement.errors:
+            error_messages.append('개인정보 수집 및 이용에 동의해주세요.')
+        
+        if form.csrf_token.errors:
+            error_messages.append('페이지를 새로고침하고 다시 시도해주세요.')
+        
+        # 오류 메시지가 있으면 표시
+        if error_messages:
+            for msg in error_messages:
+                flash(msg, 'error')
+    
     if form.validate_on_submit():
         # Password confirmation check
         if form.password.data != form.confirm_password.data:
@@ -914,9 +956,63 @@ def register_company():
 def register():
     form = Step1RegisterForm()
     
-    logging.error(f"Form submitted: {request.method == 'POST'}")
-    logging.error(f"Form validation: {form.validate()}")
-    logging.error(f"Form errors: {form.errors}")
+    # 폼이 제출되었지만 검증에 실패했을 때 상세한 오류 메시지 제공
+    if request.method == 'POST' and not form.validate():
+        # 각 필드별 오류 메시지를 사용자 친화적으로 변환
+        error_messages = []
+        
+        if form.username.errors:
+            if any('already exists' in str(error).lower() for error in form.username.errors):
+                error_messages.append('사용자명이 이미 사용 중입니다.')
+            else:
+                error_messages.append('사용자명을 올바르게 입력해주세요.')
+        
+        if form.email.errors:
+            if any('already exists' in str(error).lower() for error in form.email.errors):
+                error_messages.append('이메일이 이미 가입되어 있습니다.')
+            else:
+                error_messages.append('이메일 주소를 올바르게 입력해주세요.')
+        
+        if form.password.errors or form.confirm_password.errors:
+            error_messages.append('비밀번호를 올바르게 입력하고 확인해주세요.')
+        
+        if form.name.errors:
+            error_messages.append('이름을 입력해주세요.')
+        
+        if form.nationality.errors:
+            error_messages.append('국적을 선택해주세요.')
+        
+        if form.gender.errors:
+            error_messages.append('성별을 선택해주세요.')
+        
+        if form.korean_fluent.errors:
+            error_messages.append('한국어 구사 수준을 선택해주세요.')
+        
+        if form.languages.errors:
+            error_messages.append('구사 가능한 언어를 최소 1개 이상 선택해주세요.')
+        
+        if form.preferred_jobs.errors:
+            error_messages.append('희망 직종을 입력해주세요.')
+        
+        if form.preferred_location.errors:
+            error_messages.append('희망 근무지역을 입력해주세요.')
+        
+        if form.availability.errors:
+            error_messages.append('근무 가능 시기를 선택해주세요.')
+        
+        if form.self_intro.errors:
+            error_messages.append('자기소개를 입력해주세요.')
+        
+        if form.privacy_agreement.errors or form.terms_agreement.errors:
+            error_messages.append('개인정보 수집 및 이용에 동의해주세요.')
+        
+        if form.csrf_token.errors:
+            error_messages.append('페이지를 새로고침하고 다시 시도해주세요.')
+        
+        # 오류 메시지가 있으면 표시
+        if error_messages:
+            for msg in error_messages:
+                flash(msg, 'error')
     
     if form.validate_on_submit():
         conn = get_db_connection()

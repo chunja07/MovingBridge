@@ -33,7 +33,7 @@
                                 {{ form.username.label(class="form-label") }}
                                 <div class="input-group">
                                     {{ form.username(class="form-control", id="username_field") }}
-                                    <button type="button" class="btn btn-outline-primary" id="check_username_btn">중복확인</button>
+                                    <button type="button" class="btn btn-outline-primary btn-sm" id="check_username_btn" style="white-space: nowrap;">중복확인</button>
                                 </div>
                                 <div id="username_check_result" class="small mt-1"></div>
                                 {% for error in form.username.errors %}

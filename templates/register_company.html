@@ -30,7 +30,11 @@
                             
                             <div class="col-md-6 mb-3">
                                 {{ form.username.label(class="form-label") }}
-                                {{ form.username(class="form-control") }}
+                                <div class="input-group">
+                                    {{ form.username(class="form-control", id="company_username_field") }}
+                                    <button type="button" class="btn btn-outline-primary btn-sm" id="check_company_username_btn" style="white-space: nowrap;">중복확인</button>
+                                </div>
+                                <div id="company_username_check_result" class="small mt-1"></div>
                                 {% for error in form.username.errors %}
                                     <div class="text-danger small">{{ error }}</div>
                                 {% endfor %}
@@ -238,6 +242,62 @@ document.querySelector('form').addEventListener('submit', function(e) {
     
     if (baseAddress && detailAddress) {
         document.getElementById('address').value = baseAddress + ' ' + detailAddress;
+    }
+    
+    // 업체 사용자명 중복 확인
+    const checkCompanyUsernameBtn = document.getElementById('check_company_username_btn');
+    const companyUsernameField = document.getElementById('company_username_field');
+    const companyResultDiv = document.getElementById('company_username_check_result');
+    
+    if (checkCompanyUsernameBtn) {
+        checkCompanyUsernameBtn.addEventListener('click', function() {
+            const username = companyUsernameField.value.trim();
+            
+            if (!username) {
+                companyResultDiv.innerHTML = '<span class="text-warning">사용자명을 입력해주세요.</span>';
+                return;
+            }
+            
+            if (username.length < 3) {
+                companyResultDiv.innerHTML = '<span class="text-warning">사용자명은 3자 이상이어야 합니다.</span>';
+                return;
+            }
+            
+            // 버튼 비활성화 및 로딩 표시
+            checkCompanyUsernameBtn.disabled = true;
+            checkCompanyUsernameBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> 확인중...';
+            companyResultDiv.innerHTML = '';
+            
+            // AJAX 요청
+            fetch('/check_username', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username: username })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.available) {
+                    companyResultDiv.innerHTML = '<span class="text-success"><i class="fas fa-check-circle"></i> ' + data.message + '</span>';
+                } else {
+                    companyResultDiv.innerHTML = '<span class="text-danger"><i class="fas fa-times-circle"></i> ' + data.message + '</span>';
+                }
+            })
+            .catch(error => {
+                companyResultDiv.innerHTML = '<span class="text-danger">확인 중 오류가 발생했습니다.</span>';
+            })
+            .finally(() => {
+                // 버튼 원상복구
+                checkCompanyUsernameBtn.disabled = false;
+                checkCompanyUsernameBtn.innerHTML = '중복확인';
+            });
+        });
+        
+        // 사용자명이 변경되면 결과 초기화
+        companyUsernameField.addEventListener('input', function() {
+            companyResultDiv.innerHTML = '';
+        });
     }
 });
 </script>
