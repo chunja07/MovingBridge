@@ -76,7 +76,7 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 {{ form.contact_number.label(class="form-label") }}
-                                {{ form.contact_number(class="form-control") }}
+                                {{ form.contact_number(class="form-control", placeholder="010-0000-0000", maxlength="13", oninput="formatPhoneNumber(this)") }}
                                 {% for error in form.contact_number.errors %}
                                     <div class="text-danger small">{{ error }}</div>
                                 {% endfor %}
@@ -200,6 +200,21 @@ function searchAddress() {
             document.getElementById('detail_address').focus();
         }
     }).open();
+}
+
+// 전화번호 자동 포맷팅 함수
+function formatPhoneNumber(input) {
+    // 숫자만 추출
+    let value = input.value.replace(/\D/g, '');
+    
+    // 길이에 따라 포맷팅
+    if (value.length <= 3) {
+        input.value = value;
+    } else if (value.length <= 7) {
+        input.value = value.slice(0, 3) + '-' + value.slice(3);
+    } else {
+        input.value = value.slice(0, 3) + '-' + value.slice(3, 7) + '-' + value.slice(7, 11);
+    }
 }
 
 // 폼 제출 시 전체 주소 조합
