@@ -831,7 +831,13 @@ def is_worker_logged_in():
 
 def require_login_new():
     """Check if user is logged in (either as company or worker)"""
-    if not (is_company_logged_in() or is_worker_logged_in()):
+    company_status = is_company_logged_in()
+    worker_status = is_worker_logged_in()
+    
+    logging.debug(f"Login check - Company: {company_status}, Worker: {worker_status}")
+    logging.debug(f"Session data: {dict(session)}")
+    
+    if not (company_status or worker_status):
         flash('로그인이 필요합니다.', 'error')
         return redirect(url_for('login'))
     return None
