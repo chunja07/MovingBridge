@@ -927,6 +927,20 @@ def register():
         try:
             cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
             
+            # Check if username or email already exists
+            cur.execute('''
+                SELECT username, email FROM users 
+                WHERE username = %s OR email = %s
+            ''', (form.username.data, form.email.data.lower()))
+            
+            existing_user = cur.fetchone()
+            if existing_user:
+                if existing_user['username'] == form.username.data:
+                    flash('이미 사용 중인 사용자명입니다. 다른 사용자명을 선택해주세요.', 'error')
+                else:
+                    flash('이미 가입된 이메일입니다. 다른 이메일을 사용하거나 로그인해주세요.', 'error')
+                return render_template('register.html', form=form)
+            
             # First, create user account in users table
             password_hash = generate_password_hash(form.password.data)
             logging.debug(f"Creating user with password hash: {password_hash[:20]}...")
@@ -995,18 +1009,21 @@ def register():
                 
         except Exception as e:
             logging.error(f"Error creating introduction: {e}")
-            logging.error(f"Form errors: {form.errors}")
-            logging.error(f"Form validation: {form.validate()}")
-            logging.error(f"Form data: name={form.name.data}, nationality={form.nationality.data}, gender={form.gender.data}")
-            logging.error(f"Languages: {form.languages.data}")
             
             # Rollback the transaction
             try:
                 conn.rollback()
             except:
                 pass
-                
-            flash('등록 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', 'error')
+            
+            error_msg = str(e)
+            if 'duplicate key value violates unique constraint "users_username_key"' in error_msg:
+                flash('이미 사용 중인 사용자명입니다. 다른 사용자명을 선택해주세요.', 'error')
+            elif 'duplicate key value violates unique constraint "users_email_key"' in error_msg:
+                flash('이미 가입된 이메일입니다. 다른 이메일을 사용하거나 로그인해주세요.', 'error')
+            else:
+                flash('등록 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', 'error')
+            
             return render_template('register.html', form=form)
         finally:
             try:
